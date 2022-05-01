@@ -25,7 +25,7 @@
 - Fast speed
 - Easy archiving and unarchiving of files
 - Recursive archiving and unarchiving of directories
-- Zip format support for reading, writing and appending archives (tdefl compression and tinfl decompression)
+- Zip format support for reading, writing and appending archives (TDEF compression and TINFL decompression)
 - No any static libraries and external dependencies
 - Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
 
