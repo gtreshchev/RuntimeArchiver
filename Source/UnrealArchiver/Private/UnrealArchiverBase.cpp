@@ -10,7 +10,7 @@ UUnrealArchiverBase::UUnrealArchiverBase()
 {
 }
 
-UUnrealArchiverBase* UUnrealArchiverBase::CreateArchiver(UObject* WorldContextObject, TSubclassOf<UUnrealArchiverBase> ArchiverClass)
+UUnrealArchiverBase* UUnrealArchiverBase::CreateUnrealArchiver(UObject* WorldContextObject, TSubclassOf<UUnrealArchiverBase> ArchiverClass)
 {
 	return NewObject<UUnrealArchiverBase>(WorldContextObject, ArchiverClass);
 }

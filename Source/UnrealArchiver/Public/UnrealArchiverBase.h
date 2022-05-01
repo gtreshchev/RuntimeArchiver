@@ -29,7 +29,7 @@ public:
 	 * Create an archiver to archive/dearchive files and directories
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver", meta = (WorldContext="WorldContextObject", DeterminesOutputType = "ArchiverClass"))
-	static UUnrealArchiverBase* CreateArchiver(UObject* WorldContextObject, TSubclassOf<UUnrealArchiverBase> ArchiverClass);
+	static UUnrealArchiverBase* CreateUnrealArchiver(UObject* WorldContextObject, TSubclassOf<UUnrealArchiverBase> ArchiverClass);
 
 	//~ Begin UObject Interface.
 	virtual void BeginDestroy() override;
