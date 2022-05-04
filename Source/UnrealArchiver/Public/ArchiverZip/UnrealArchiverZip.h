@@ -32,11 +32,9 @@ public:
 
 	virtual bool GetArchiveEntryInfoByName(FString EntryName, FUnrealArchiveEntry& EntryInfo) override;
 	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArchiveEntry& EntryInfo) override;
-
-	virtual bool AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel) override;
+	
 	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel) override;
-
-	virtual bool ExtractEntryToStorage(const FUnrealArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite = true) override;
+	
 	virtual bool ExtractEntryToMemory(const FUnrealArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData) override;
 
 	virtual bool Initialize() override;

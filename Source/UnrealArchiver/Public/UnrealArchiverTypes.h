@@ -112,3 +112,9 @@ struct FUnrealArchiveEntry
 	{
 	}
 };
+
+/** Delegate broadcasting the result of recursive archive operations */
+DECLARE_DYNAMIC_DELEGATE_OneParam(FUnrealArchiverRecursiveResult, bool, bSuccess);
+
+/** Delegate broadcasting the result of asynchronous archive operations */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUnrealArchiverAsyncResult);

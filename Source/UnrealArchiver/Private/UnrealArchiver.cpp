@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Georgy Treshchev 2022.
 
 #include "UnrealArchiver.h"
 #include "UnrealArchiverDefines.h"

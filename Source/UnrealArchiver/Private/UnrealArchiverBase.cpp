@@ -1,8 +1,12 @@
 ﻿// Georgy Treshchev 2022.
 
 #include "UnrealArchiverBase.h"
+
 #include "UnrealArchiverSubsystem.h"
 #include "UnrealArchiverDefines.h"
+#include "Async/Async.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
 
 UUnrealArchiverBase::UUnrealArchiverBase()
 	: Mode(EUnrealArchiveMode::Undefined)
@@ -219,12 +223,28 @@ bool UUnrealArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePat
 		return false;
 	}
 
-	if (!FPaths::FileExists(FilePath) && !FPaths::DirectoryExists(FilePath))
+	FPaths::NormalizeFilename(FilePath);
+
+	if (!FPaths::FileExists(FilePath))
 	{
-		ReportError(EUnrealArchiverErrorCode::AddError, FString::Printf(TEXT("Path '%s' does not contain a directory or file"), *FilePath));
+		ReportError(EUnrealArchiverErrorCode::AddError, FString::Printf(TEXT("Path '%s' does not contain a file"), *FilePath));
 		return false;
 	}
 
+	TArray64<uint8> FileData;
+	if (!FFileHelper::LoadFileToArray(FileData, *FilePath))
+	{
+		ReportError(EUnrealArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to load file '%s' for entry '%s'"), *FilePath, *EntryName));
+		return false;
+	}
+
+	if (!AddEntryFromMemory(EntryName, FileData, CompressionLevel))
+	{
+		ReportError(EUnrealArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add entry '%s' from file '%s'"), *EntryName, *FilePath));
+		return false;
+	}
+
+	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully added entry '%s' from '%s'"), *EntryName, *FilePath);
 	return true;
 }
 
@@ -365,6 +385,7 @@ bool UUnrealArchiverBase::ExtractEntryToStorage(const FUnrealArchiveEntry& Entry
 		return false;
 	}
 
+	// If this is a directory
 	if (EntryInfo.bIsDirectory)
 	{
 		FPaths::NormalizeDirectoryName(FilePath);
@@ -379,7 +400,26 @@ bool UUnrealArchiverBase::ExtractEntryToStorage(const FUnrealArchiveEntry& Entry
 
 			UE_LOG(LogUnrealArchiver, Warning, TEXT("Directory '%s' already exists. It will be overwritten"), *FilePath);
 		}
+
+		IPlatformFile& PlatformFile{FPlatformFileManager::Get().GetPlatformFile()};
+
+		// Ensure we have a valid directory to extract entry to
+		{
+			const FString DirectoryPath{FPaths::GetPath(FilePath)};
+			if (!PlatformFile.CreateDirectoryTree(*DirectoryPath))
+			{
+				ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to create subdirectory '%s' to extract entry '%s'"), *DirectoryPath, *EntryInfo.Name));
+				return false;
+			}
+		}
+
+		if (!PlatformFile.CreateDirectory(*FilePath))
+		{
+			ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract entry '%s' to directory '%s'"), *EntryInfo.Name, *FilePath));
+			return false;
+		}
 	}
+		// If this is a file
 	else
 	{
 		FPaths::NormalizeFilename(FilePath);
@@ -394,6 +434,21 @@ bool UUnrealArchiverBase::ExtractEntryToStorage(const FUnrealArchiveEntry& Entry
 
 			UE_LOG(LogUnrealArchiver, Warning, TEXT("File '%s' already exists. It will be overwritten"), *FilePath);
 		}
+
+		TArray64<uint8> EntryData;
+		if (!ExtractEntryToMemory(EntryInfo, EntryData))
+		{
+			ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract the entry '%s' from archive to memory for file '%s'"), *EntryInfo.Name, *FilePath));
+			return false;
+		}
+
+		if (!FFileHelper::SaveArrayToFile(EntryData, *FilePath))
+		{
+			ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to save the entry '%s' from memory to file '%s'"), *EntryInfo.Name, *FilePath));
+			return false;
+		}
+		
+		UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully extracted entry '%s' to file '%s'"), *EntryInfo.Name, *FilePath);
 	}
 
 	return true;
@@ -526,7 +581,7 @@ void UUnrealArchiverBase::ReportError(EUnrealArchiverErrorCode ErrorCode, const 
 	// Making sure we are in the game thread
 	if (!IsInGameThread())
 	{
-		AsyncTask(ENamedThreads::GameThread, [this, ErrorCode, ErrorString]() { ReportError(ErrorCode, ErrorString); });
+		AsyncTask(ENamedThreads::GameThread, [this, ErrorCode, ErrorString]() { UUnrealArchiverBase::ReportError(ErrorCode, ErrorString); });
 		return;
 	}
 

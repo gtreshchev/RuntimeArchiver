@@ -7,9 +7,6 @@
 #include "UObject/Object.h"
 #include "UnrealArchiverBase.generated.h"
 
-/** Delegate broadcasting the result of recursive archive operations */
-DECLARE_DYNAMIC_DELEGATE_OneParam(FUnrealArchiverRecursiveResult, bool, bSuccess);
-
 /**
  * The base class for the archiver. Do not create it manually!
  */
@@ -35,7 +32,7 @@ public:
 	virtual void BeginDestroy() override;
 	//~ End UObject Interface.
 
-protected:
+public:
 	/**
 	 * Create an archive in the specified path. The file will be created after calling the "CloseArchive" function
 	 *
@@ -139,13 +136,13 @@ protected:
 	 * @note To add all files in a directory use "AddEntryFromStorage_Recursive" function
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Add")
-	virtual bool AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	bool AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
 	 * Recursively add entries from storage. Must be used for directories only
 	 *
 	 * @param OnResult Delegate broadcasting on result
-	 * @param DirectoryPath Directory or path to be archived
+	 * @param DirectoryPath Directory to be archived
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
@@ -163,7 +160,7 @@ private:
 	 */
 	bool AddEntryFromStorage_Recursively_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
-protected:
+public:
 	/**
 	 * Add entry from memory. In other words, import the data in-memory into the archive
 	 *
@@ -194,13 +191,13 @@ protected:
 	 * @return Whether the operation was successful or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Extract")
-	virtual bool ExtractEntryToStorage(const FUnrealArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite = true);
+	bool ExtractEntryToStorage(const FUnrealArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite = true);
 
 	/**
 	 * Recursively extract entries to storage. Must be used for directories only
 	 *
 	 * @param OnResult Delegate broadcasting on result
-	 * @param EntryName Path to the entry to extract to. Must be a directory only
+	 * @param EntryName Path to the entry to extract to. Must be a directory only. Leave the field empty to use all entries
 	 * @param DirectoryPath Path to the directory for exporting entries
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not

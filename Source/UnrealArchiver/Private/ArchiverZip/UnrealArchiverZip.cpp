@@ -5,6 +5,8 @@
 #include "UnrealArchiverSubsystem.h"
 #include "UnrealArchiverDefines.h"
 #include "UnrealArchiverZipIncludes.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
 
 UUnrealArchiverZip::UUnrealArchiverZip()
 	: Super::UUnrealArchiverBase()
@@ -199,66 +201,12 @@ bool UUnrealArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArc
 		EntryInfo.Index = static_cast<int32>(ArchiveFileStat.m_file_index);
 		EntryInfo.CompressedSize = static_cast<int64>(ArchiveFileStat.m_comp_size);
 		EntryInfo.UncompressedSize = static_cast<int64>(ArchiveFileStat.m_uncomp_size);
+#ifndef MINIZ_NO_TIME
 		EntryInfo.CreationTime = FDateTime::FromUnixTimestamp(ArchiveFileStat.m_time);
+#endif
 		EntryInfo.Name = UTF8_TO_TCHAR(ArchiveFileStat.m_filename);
 		EntryInfo.bIsDirectory = static_cast<bool>(mz_zip_reader_is_file_a_directory(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryIndex)));
 	}
-
-	return true;
-}
-
-bool UUnrealArchiverZip::AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel)
-{
-	if (!Super::AddEntryFromStorage(EntryName, FilePath, CompressionLevel))
-	{
-		return false;
-	}
-	
-	FPaths::NormalizeFilename(EntryName);
-	FPaths::NormalizeFilename(FilePath);
-
-	bool bResult;
-	{
-		// If this is a directory
-		if (FPaths::DirectoryExists(FilePath))
-		{
-			FString DirectoryEntryName = EntryName;
-
-			// Miniz detects a directory only if it ends with a forward slash (/)
-			if (!DirectoryEntryName.EndsWith(TEXT("/")))
-			{
-				DirectoryEntryName += TEXT('/');
-			}
-
-			// Writing empty data as a directory to entry
-			bResult = static_cast<bool>(mz_zip_writer_add_mem_ex(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*DirectoryEntryName),
-			                                                     nullptr, 0,
-			                                                     nullptr, 0,
-			                                                     static_cast<mz_uint>(CompressionLevel), 0, 0));
-		}
-		// If this is a file
-		else if (FPaths::FileExists(FilePath))
-		{
-			// Writing data from a file to entry
-			bResult = static_cast<bool>(mz_zip_writer_add_file(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*EntryName),
-			                                                   TCHAR_TO_UTF8(*FilePath),
-			                                                   nullptr, 0,
-			                                                   static_cast<mz_uint>(CompressionLevel)));
-		}
-		// If not a file or folder
-		else
-		{
-			bResult = false;
-		}
-	}
-
-	if (!bResult)
-	{
-		ReportError(EUnrealArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add entry '%s' from '%s'"), *EntryName, *FilePath));
-		return false;
-	}
-
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully added entry '%s' from '%s'"), *EntryName, *FilePath);
 
 	return true;
 }
@@ -289,74 +237,6 @@ bool UUnrealArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<ui
 	return true;
 }
 
-// Callback for extracting zip entries to storage
-extern "C"
-{
-	static size_t ExtractZipEntryToStorageCallback(void* Argument, unsigned long long Offset, const void* Data, size_t Size)
-	{
-		IFileHandle* FileHandle{static_cast<IFileHandle*>(Argument)};
-
-		if (!FileHandle->Write(static_cast<const uint8*>(Data), static_cast<int32>(Size)))
-		{
-			return 0;
-		}
-
-		return Size;
-	}
-}
-
-bool UUnrealArchiverZip::ExtractEntryToStorage(const FUnrealArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite)
-{
-	if (!Super::ExtractEntryToStorage(EntryInfo, FilePath, bForceOverwrite))
-	{
-		return false;
-	}
-
-	FPaths::NormalizeFilename(FilePath);
-
-	IPlatformFile& PlatformFile{FPlatformFileManager::Get().GetPlatformFile()};
-
-	// Ensure we have a valid directory to extract entry to
-	{
-		const FString DirectoryPath{FPaths::GetPath(FilePath)};
-		if (!PlatformFile.CreateDirectoryTree(*DirectoryPath))
-		{
-			ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to create subdirectory '%s' to extract entry '%s'"), *DirectoryPath, *EntryInfo.Name));
-			return false;
-		}
-	}
-
-	if (!EntryInfo.bIsDirectory)
-	{
-		IFileHandle* FileHandle{PlatformFile.OpenWrite(*FilePath)};
-
-		if (FileHandle == nullptr)
-		{
-			ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to open a file '%s' for writing"), *FilePath));
-			return false;
-		}
-
-		const bool bResult{static_cast<bool>(mz_zip_reader_extract_to_callback(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryInfo.Index), ExtractZipEntryToStorageCallback, FileHandle, 0))};
-
-		if (!bResult)
-		{
-			ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract entry '%s' to file '%s'"), *EntryInfo.Name, *FilePath));
-			delete FileHandle;
-			return false;
-		}
-
-		delete FileHandle;
-	}
-	else
-	{
-		PlatformFile.CreateDirectory(*FilePath);
-	}
-
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully extracted entry '%s' to '%s'"), *EntryInfo.Name, *FilePath);
-
-	return true;
-}
-
 bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData)
 {
 	if (!Super::ExtractEntryToMemory(EntryInfo, UnarchivedData))
@@ -372,9 +252,9 @@ bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryIn
 
 	const int32 NumOfArchiveEntries{GetArchiveEntries()};
 
-	if ((NumOfArchiveEntries - 1) > EntryInfo.Index || EntryInfo.Index < 0)
+	if (EntryInfo.Index > (NumOfArchiveEntries - 1) || EntryInfo.Index < 0)
 	{
-		ReportError(EUnrealArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Entry index %d is invalid. Min index: 0, Max index: %d"), (NumOfArchiveEntries - 1), EntryInfo.Index));
+		ReportError(EUnrealArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
 		return false;
 	}
 
@@ -387,7 +267,7 @@ bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryIn
 		ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract entry '%s' into memory"), *EntryInfo.Name));
 		return false;
 	}
-	
+
 	UnarchivedData = TArray64<uint8>(static_cast<uint8*>(EntryInMemoryPtr), EntryInMemorySize);
 
 	FMemory::Free(EntryInMemoryPtr);
@@ -450,7 +330,7 @@ void UUnrealArchiverZip::ReportError(EUnrealArchiverErrorCode ErrorCode, const F
 		// Cleaning last miniz error to avoid getting the same error next time
 		if (LastMinizError != MZ_ZIP_NO_ERROR)
 		{
-			//mz_zip_set_error(MinizArchiveReal, MZ_ZIP_NO_ERROR);
+			mz_zip_set_error(MinizArchiveReal, MZ_ZIP_NO_ERROR);
 			ReadyErrorString += FString::Printf(TEXT("\nMiniz error details: '%s'."), *LastMinizErrorStr);
 		}
 	}
