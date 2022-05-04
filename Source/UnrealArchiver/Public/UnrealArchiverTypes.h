@@ -67,27 +67,27 @@ struct FUnrealArchiveEntry
 	GENERATED_BODY()
 
 	/** Entry index. Used to identify entry */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
 	int32 Index;
 
 	/** Entry name */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
 	FString Name;
 
 	/** Whether this entry is a directory (folder) or not */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
 	bool bIsDirectory;
 
 	/** Uncompressed entry size */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
 	int64 UncompressedSize;
 
 	/** Compressed entry size */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
 	int64 CompressedSize;
 
 	/** Entry creation time */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
 	FDateTime CreationTime;
 
 	/** Default constructor */

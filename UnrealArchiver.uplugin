@@ -19,7 +19,17 @@
     {
       "Name": "UnrealArchiver",
       "Type": "Runtime",
-      "LoadingPhase": "Default"
+      "LoadingPhase": "Default",
+      "PlatformAllowList": [
+        "Win64",
+        "Mac",
+        "Android",
+        "IOS",
+        "Linux",
+        "LinuxArm64",
+        "PS4",
+        "Switch"
+      ]
     }
   ]
 }
