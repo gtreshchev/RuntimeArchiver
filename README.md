@@ -13,7 +13,7 @@
     <a href="https://github.com/gtreshchev/RuntimeArchiver/wiki"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="https://unrealengine.com/marketplace/product/unreal-archiver">Marketplace</a>
+    <a href="https://unrealengine.com/marketplace/product/runtime-archiver">Marketplace</a>
     .
     <a href="https://github.com/gtreshchev/RuntimeArchiver/releases">Releases</a>
     .
