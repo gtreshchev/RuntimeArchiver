@@ -36,10 +36,9 @@ void URuntimeArchiverUnarchiveAsyncTask::StartDirectory(FString ArchivePath, FSt
 		return;
 	}
 
-	FRuntimeArchiverRecursiveResult RecursiveResult;
-	RecursiveResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnRecursiveResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult);
 
-	Archiver->ExtractEntryToStorage_Recursively(RecursiveResult, MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
+	Archiver->ExtractEntriesToStorage_Recursively(OperationResult, MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
 }
 
 void URuntimeArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)
@@ -49,46 +48,34 @@ void URuntimeArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<
 		OnFail.Broadcast();
 		return;
 	}
+	
+	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult);
 
-	FPaths::NormalizeDirectoryName(DirectoryPath);
-
-	AsyncTask(ENamedThreads::AnyThread, [this, EntryNames = MoveTemp(EntryNames), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
+	TArray<FRuntimeArchiveEntry> Entries;
+	
+	// Getting archive entries by names
 	{
-		auto OnResult = [this](bool bResult)
+		for (const FString& EntryName : EntryNames)
 		{
-			AsyncTask(ENamedThreads::GameThread, [this, bResult]()
+			FRuntimeArchiveEntry Entry;
+			if (!Archiver->GetArchiveEntryInfoByName(EntryName, Entry))
 			{
-				OnRecursiveResult(bResult);
-			});
-		};
-
-		for (FString EntryName : EntryNames)
-		{
-			FPaths::NormalizeDirectoryName(EntryName);
-
-			FRuntimeArchiveEntry EntryInfo;
-
-			if (!Archiver->GetArchiveEntryInfoByName(EntryName, EntryInfo))
-			{
-				OnResult(false);
+				Archiver->ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to find '%s' archive entry"), *EntryName));
+				OnAsyncResult(false);
 				return;
 			}
-
-			const bool bResult{Archiver->ExtractEntryToStorage(EntryInfo, FPaths::Combine(DirectoryPath, TEXT("/"), EntryName), bForceOverwrite)};
-
-			if (!bResult)
-			{
-				OnResult(false);
-				return;
-			}
+			
+			Entries.Add(Entry);
 		}
-
-		OnResult(true);
-	});
+	}
+	
+	Archiver->ExtractEntriesToStorage(OperationResult, MoveTemp(Entries), MoveTemp(DirectoryPath), bForceOverwrite);
 }
 
-void URuntimeArchiverUnarchiveAsyncTask::OnRecursiveResult(bool bSuccess)
+void URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult(bool bSuccess)
 {
+	OperationResult.Clear();
+	
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
 		OnFail.Broadcast();

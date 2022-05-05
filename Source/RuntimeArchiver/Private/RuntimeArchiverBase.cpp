@@ -150,8 +150,8 @@ bool URuntimeArchiverBase::GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData
 	if (Mode != ERuntimeArchiverMode::Write || Location != ERuntimeArchiverLocation::Memory)
 	{
 		ReportError(ERuntimeArchiverErrorCode::UnsupportedMode, FString::Printf(TEXT("Only '%s' mode and '%s' location are supported to get archive data (using mode: '%s', using location: '%s')"),
-		                                                                       *UEnum::GetValueAsName(ERuntimeArchiverMode::Write).ToString(), *UEnum::GetValueAsName(ERuntimeArchiverLocation::Memory).ToString(),
-		                                                                       *UEnum::GetValueAsName(Mode).ToString(), *UEnum::GetValueAsName(Location).ToString()));
+		                                                                        *UEnum::GetValueAsName(ERuntimeArchiverMode::Write).ToString(), *UEnum::GetValueAsName(ERuntimeArchiverLocation::Memory).ToString(),
+		                                                                        *UEnum::GetValueAsName(Mode).ToString(), *UEnum::GetValueAsName(Location).ToString()));
 		return false;
 	}
 
@@ -245,10 +245,50 @@ bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePa
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added entry '%s' from '%s'"), *EntryName, *FilePath);
+	
 	return true;
 }
 
-void URuntimeArchiverBase::AddEntryFromStorage_Recursively(FRuntimeArchiverRecursiveResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
+void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel)
+{
+	if (!IsInitialized())
+	{
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Archiver is not initialized"));
+		OnResult.ExecuteIfBound(false);
+		return;
+	}
+	
+	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
+	{
+		auto ExecuteResult = [this, OnResult](bool bResult)
+		{
+			AsyncTask(ENamedThreads::GameThread, [this, OnResult, bResult]()
+			{
+				OnResult.ExecuteIfBound(bResult);
+			});
+		};
+
+		for (FString FilePath : FilePaths)
+		{
+			FPaths::NormalizeFilename(FilePath);
+
+			const FString EntryName{FPaths::GetCleanFilename(FilePath)};
+
+			if (!AddEntryFromStorage(EntryName, FilePath, CompressionLevel))
+			{
+				ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot add '%s' entry. Aborting async adding entries"), *EntryName));
+				ExecuteResult(false);
+				return;
+			}
+		}
+
+		UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added '%d' entries"), FilePaths.Num());
+
+		ExecuteResult(true);
+	});
+}
+
+void URuntimeArchiverBase::AddEntriesFromStorage_Recursively(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -288,7 +328,7 @@ void URuntimeArchiverBase::AddEntryFromStorage_Recursively(FRuntimeArchiverRecur
 
 	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel]()
 	{
-		const bool bResult{AddEntryFromStorage_Recursively_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel)};
+		const bool bResult{AddEntriesFromStorage_Recursively_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel)};
 
 		if (bResult)
 		{
@@ -302,7 +342,7 @@ void URuntimeArchiverBase::AddEntryFromStorage_Recursively(FRuntimeArchiverRecur
 	});
 }
 
-bool URuntimeArchiverBase::AddEntryFromStorage_Recursively_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverBase::AddEntriesFromStorage_Recursively_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel)
 {
 	class FDirectoryVisitor_EntryAppender : public IPlatformFile::FDirectoryVisitor
 	{
@@ -419,7 +459,7 @@ bool URuntimeArchiverBase::ExtractEntryToStorage(const FRuntimeArchiveEntry& Ent
 			return false;
 		}
 	}
-		// If this is a file
+	// If this is a file
 	else
 	{
 		FPaths::NormalizeFilename(FilePath);
@@ -447,14 +487,58 @@ bool URuntimeArchiverBase::ExtractEntryToStorage(const FRuntimeArchiveEntry& Ent
 			ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to save the entry '%s' from memory to file '%s'"), *EntryInfo.Name, *FilePath));
 			return false;
 		}
-		
+
 		UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted entry '%s' to file '%s'"), *EntryInfo.Name, *FilePath);
 	}
 
 	return true;
 }
 
-void URuntimeArchiverBase::ExtractEntryToStorage_Recursively(FRuntimeArchiverRecursiveResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
+void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FRuntimeArchiveEntry> EntryInfo, FString DirectoryPath, bool bForceOverwrite)
+{
+	if (!IsInitialized())
+	{
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Archiver is not initialized"));
+		OnResult.ExecuteIfBound(false);
+		return;
+	}
+
+	FPaths::NormalizeDirectoryName(DirectoryPath);
+	
+	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, EntryInfo = MoveTemp(EntryInfo), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
+	{
+		auto ExecuteResult = [this, OnResult](bool bResult)
+		{
+			AsyncTask(ENamedThreads::GameThread, [this, OnResult, bResult]()
+			{
+				OnResult.ExecuteIfBound(bResult);
+			});
+		};
+
+		for (const FRuntimeArchiveEntry& Entry : EntryInfo)
+		{
+			const FString ExtractFilePath = [&Entry]()
+			{
+				FString FilePath = Entry.Name;
+				FPaths::NormalizeDirectoryName(FilePath);
+				return MoveTemp(FilePath);
+			}();
+
+			if (!ExtractEntryToStorage(Entry, FPaths::Combine(DirectoryPath, TEXT("/"), ExtractFilePath), bForceOverwrite))
+			{
+				ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot extract '%s' entry. Aborting async extracting entries"), *Entry.Name));
+				ExecuteResult(false);
+				return;
+			}
+		}
+
+		UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted '%d' entries"), EntryInfo.Num());
+		
+		ExecuteResult(true);
+	});
+}
+
+void URuntimeArchiverBase::ExtractEntriesToStorage_Recursively(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
 	if (!IsInitialized())
 	{

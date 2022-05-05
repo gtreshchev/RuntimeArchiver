@@ -133,21 +133,30 @@ public:
 	 * @param FilePath Path to the file to be archived
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
-	 * @note To add all files in a directory use "AddEntryFromStorage_Recursive" function
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
 	bool AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
+	 * Add entries from storage. In other words, import files into the archive
+	 *
+	 * @param OnResult Delegate broadcasting the result
+	 * @param FilePaths File paths to be archived
+	 * @param CompressionLevel Compression level. The higher the level, the more compression
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
+	void AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+
+	/**
 	 * Recursively add entries from storage. Must be used for directories only
 	 *
-	 * @param OnResult Delegate broadcasting on result
+	 * @param OnResult Delegate broadcasting the result
 	 * @param DirectoryPath Directory to be archived
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	void AddEntryFromStorage_Recursively(FRuntimeArchiverRecursiveResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	void AddEntriesFromStorage_Recursively(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 private:
 	/**
@@ -158,7 +167,7 @@ private:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
 	 */
-	bool AddEntryFromStorage_Recursively_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	bool AddEntriesFromStorage_Recursively_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 public:
 	/**
@@ -194,16 +203,27 @@ public:
 	bool ExtractEntryToStorage(const FRuntimeArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite = true);
 
 	/**
+	 * Extract entry to storage. In other words, extract the file from the archive to storage
+	 *
+	 * @param OnResult Delegate broadcasting the result
+	 * @param EntryInfo Array of all entries to extract
+	 * @param DirectoryPath Path to the directory for exporting entries
+	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
+	void ExtractEntriesToStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FRuntimeArchiveEntry> EntryInfo, FString DirectoryPath, bool bForceOverwrite = true);
+
+	/**
 	 * Recursively extract entries to storage. Must be used for directories only
 	 *
-	 * @param OnResult Delegate broadcasting on result
+	 * @param OnResult Delegate broadcasting the result
 	 * @param EntryName Path to the entry to extract to. Must be a directory only. Leave the field empty to use all entries
 	 * @param DirectoryPath Path to the directory for exporting entries
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
-	void ExtractEntryToStorage_Recursively(FRuntimeArchiverRecursiveResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
+	void ExtractEntriesToStorage_Recursively(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
 
 	/**
 	 * Extract entry into memory. In other words, extract the file from the archive into memory

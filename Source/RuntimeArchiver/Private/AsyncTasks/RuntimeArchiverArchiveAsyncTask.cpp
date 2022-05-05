@@ -35,10 +35,9 @@ void URuntimeArchiverArchiveAsyncTask::StartDirectory(FString ArchivePath, FStri
 		OnFail.Broadcast();
 	}
 
-	FRuntimeArchiverRecursiveResult RecursiveResult;
-	RecursiveResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnRecursiveResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnAsyncResult);
 
-	Archiver->AddEntryFromStorage_Recursively(RecursiveResult, DirectoryPath, bAddParentDirectory, CompressionLevel);
+	Archiver->AddEntriesFromStorage_Recursively(OperationResult, DirectoryPath, bAddParentDirectory, CompressionLevel);
 }
 
 void URuntimeArchiverArchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel)
@@ -48,35 +47,15 @@ void URuntimeArchiverArchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FS
 		OnFail.Broadcast();
 	}
 
-	AsyncTask(ENamedThreads::AnyThread, [this, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
-	{
-		auto OnResult = [this](bool bResult)
-		{
-			AsyncTask(ENamedThreads::GameThread, [this, bResult]()
-			{
-				OnRecursiveResult(bResult);
-			});
-		};
+	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnAsyncResult);
 
-		for (FString FilePath : FilePaths)
-		{
-			FPaths::NormalizeFilename(FilePath);
-
-			const bool bResult{Archiver->AddEntryFromStorage(FPaths::GetCleanFilename(FilePath), FilePath, CompressionLevel)};
-
-			if (!bResult)
-			{
-				OnResult(false);
-				return;
-			}
-		}
-
-		OnResult(true);
-	});
+	Archiver->AddEntriesFromStorage(OperationResult, MoveTemp(FilePaths), CompressionLevel);
 }
 
-void URuntimeArchiverArchiveAsyncTask::OnRecursiveResult(bool bSuccess)
+void URuntimeArchiverArchiveAsyncTask::OnAsyncResult(bool bSuccess)
 {
+	OperationResult.Clear();
+	
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
 		OnFail.Broadcast();

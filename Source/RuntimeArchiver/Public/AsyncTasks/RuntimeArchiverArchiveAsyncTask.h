@@ -43,20 +43,23 @@ public:
 
 	/** Archiving completed successfully */
 	UPROPERTY(BlueprintAssignable)
-	FRuntimeArchiverAsyncResult OnSuccess;
+	FRuntimeArchiverAsyncActionResult OnSuccess;
 
 	/** Unarchiving completed successfully */
 	UPROPERTY(BlueprintAssignable)
-	FRuntimeArchiverAsyncResult OnFail;
+	FRuntimeArchiverAsyncActionResult OnFail;
 
 private:
 	/** Used archiver */
 	UPROPERTY()
 	URuntimeArchiverBase* Archiver;
 
+	/** Operation result delegate */
+	FRuntimeArchiverAsyncOperationResult OperationResult;
+
 	void StartDirectory(FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel);
 	void StartFiles(FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel);
 
 	UFUNCTION()
-	void OnRecursiveResult(bool bSuccess);
+	void OnAsyncResult(bool bSuccess);
 };
