@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FUnrealArchiverModule : public IModuleInterface
+class FRuntimeArchiverModule : public IModuleInterface
 {
 public:
 

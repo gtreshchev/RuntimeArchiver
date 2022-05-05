@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "UnrealArchiverTypes.generated.h"
+#include "RuntimeArchiverTypes.generated.h"
 
 /** Possible archiver errors */
-UENUM(Blueprintable, Category = "Unreal Archiver")
-enum class EUnrealArchiverErrorCode : uint8
+UENUM(Blueprintable, Category = "Runtime Archiver")
+enum class ERuntimeArchiverErrorCode : uint8
 {
 	NotInitialized,
 	UnsupportedMode,
@@ -18,15 +18,8 @@ enum class EUnrealArchiverErrorCode : uint8
 	InvalidArgument
 };
 
-/** Archive format */
-UENUM(Blueprintable, Category = "Unreal Archiver")
-enum class EUnrealArchiveFormat : uint8
-{
-	ZIP
-};
-
 /** Archive entry compression level. The higher the level, the more compression */
-UENUM(Blueprintable, Category = "Unreal Archiver")
+UENUM(Blueprintable, Category = "Runtime Archiver")
 enum class EUnrealEntryCompressionLevel : uint8
 {
 	Compression0 = 0 UMETA(DisplayName = "0", ToolTip = "No compression"),
@@ -44,7 +37,7 @@ enum class EUnrealEntryCompressionLevel : uint8
 
 /** Archive mode */
 UENUM()
-enum class EUnrealArchiveMode : uint8
+enum class ERuntimeArchiverMode : uint8
 {
 	Undefined,
 	Read,
@@ -53,7 +46,7 @@ enum class EUnrealArchiveMode : uint8
 
 /** Archive location */
 UENUM()
-enum class EUnrealArchiveLocation : uint8
+enum class ERuntimeArchiverLocation : uint8
 {
 	Undefined,
 	Storage,
@@ -61,37 +54,37 @@ enum class EUnrealArchiveLocation : uint8
 };
 
 /** Information about archive entry. Used to search for files/directories in an archive to extract data. Do not fill it in manually */
-USTRUCT(BlueprintType, Category = "Unreal Archiver")
-struct FUnrealArchiveEntry
+USTRUCT(BlueprintType, Category = "Runtime Archiver")
+struct FRuntimeArchiveEntry
 {
 	GENERATED_BODY()
 
 	/** Entry index. Used to identify entry */
-	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime Archiver")
 	int32 Index;
 
 	/** Entry name */
-	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime Archiver")
 	FString Name;
 
 	/** Whether this entry is a directory (folder) or not */
-	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime Archiver")
 	bool bIsDirectory;
 
 	/** Uncompressed entry size */
-	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime Archiver")
 	int64 UncompressedSize;
 
 	/** Compressed entry size */
-	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime Archiver")
 	int64 CompressedSize;
 
 	/** Entry creation time */
-	UPROPERTY(BlueprintReadOnly, Category = "Unreal Archiver")
+	UPROPERTY(BlueprintReadOnly, Category = "Runtime Archiver")
 	FDateTime CreationTime;
 
 	/** Default constructor */
-	FUnrealArchiveEntry()
+	FRuntimeArchiveEntry()
 		: Index(0)
 	  , Name(FString())
 	  , bIsDirectory(false)
@@ -102,7 +95,7 @@ struct FUnrealArchiveEntry
 	}
 
 	/** Custom constructor */
-	FUnrealArchiveEntry(int32 Index)
+	FRuntimeArchiveEntry(int32 Index)
 		: Index(Index)
 	  , Name(FString())
 	  , bIsDirectory(false)
@@ -114,7 +107,7 @@ struct FUnrealArchiveEntry
 };
 
 /** Delegate broadcasting the result of recursive archive operations */
-DECLARE_DYNAMIC_DELEGATE_OneParam(FUnrealArchiverRecursiveResult, bool, bSuccess);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverRecursiveResult, bool, bSuccess);
 
 /** Delegate broadcasting the result of asynchronous archive operations */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUnrealArchiverAsyncResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRuntimeArchiverAsyncResult);

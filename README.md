@@ -1,21 +1,21 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/gtreshchev/UnrealArchiver">
+  <a href="https://github.com/gtreshchev/RuntimeArchiver">
     <img src="Resources/Icon128.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">Unreal Archiver</h3>
+<h3 align="center">Runtime Archiver</h3>
 
   <p align="center">
     Archiving and dearchiving directories and files
     <br/>
     <br/>
-    <a href="https://github.com/gtreshchev/UnrealArchiver/wiki"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/gtreshchev/RuntimeArchiver/wiki"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
     <a href="https://unrealengine.com/marketplace/product/unreal-archiver">Marketplace</a>
     .
-    <a href="https://github.com/gtreshchev/UnrealArchiver/releases">Releases</a>
+    <a href="https://github.com/gtreshchev/RuntimeArchiver/releases">Releases</a>
     .
     <a href="https://t.me/unrealblog">Support Chat</a>
   </p>

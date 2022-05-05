@@ -1,34 +1,34 @@
 ﻿// Georgy Treshchev 2022.
 
-#include "AsyncTasks/UnrealArchiverUnarchiveAsyncTask.h"
+#include "AsyncTasks/RuntimeArchiverUnarchiveAsyncTask.h"
 
-#include "UnrealArchiverBase.h"
+#include "RuntimeArchiverBase.h"
 #include "Async/Async.h"
 #include "Misc/Paths.h"
 
-UUnrealArchiverUnarchiveAsyncTask* UUnrealArchiverUnarchiveAsyncTask::UnarchiveDirectoryAsync(TSubclassOf<UUnrealArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
+URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::UnarchiveDirectoryAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
-	UUnrealArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<UUnrealArchiverUnarchiveAsyncTask>();
+	URuntimeArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverUnarchiveAsyncTask>();
 
-	ArchiveTask->Archiver = UUnrealArchiverBase::CreateUnrealArchiver(ArchiveTask, ArchiverClass);
+	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
 
 	ArchiveTask->StartDirectory(MoveTemp(ArchivePath), MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
 
 	return ArchiveTask;
 }
 
-UUnrealArchiverUnarchiveAsyncTask* UUnrealArchiverUnarchiveAsyncTask::UnarchiveFilesAsync(TSubclassOf<UUnrealArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)
+URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::UnarchiveFilesAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)
 {
-	UUnrealArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<UUnrealArchiverUnarchiveAsyncTask>();
+	URuntimeArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverUnarchiveAsyncTask>();
 
-	ArchiveTask->Archiver = UUnrealArchiverBase::CreateUnrealArchiver(ArchiveTask, ArchiverClass);
+	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
 
 	ArchiveTask->StartFiles(MoveTemp(ArchivePath), MoveTemp(EntryNames), MoveTemp(DirectoryPath), bForceOverwrite);
 
 	return ArchiveTask;
 }
 
-void UUnrealArchiverUnarchiveAsyncTask::StartDirectory(FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
+void URuntimeArchiverUnarchiveAsyncTask::StartDirectory(FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
 	if (!Archiver->OpenArchiveFromStorage(ArchivePath))
 	{
@@ -36,13 +36,13 @@ void UUnrealArchiverUnarchiveAsyncTask::StartDirectory(FString ArchivePath, FStr
 		return;
 	}
 
-	FUnrealArchiverRecursiveResult RecursiveResult;
-	RecursiveResult.BindDynamic(this, &UUnrealArchiverUnarchiveAsyncTask::OnRecursiveResult);
+	FRuntimeArchiverRecursiveResult RecursiveResult;
+	RecursiveResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnRecursiveResult);
 
 	Archiver->ExtractEntryToStorage_Recursively(RecursiveResult, MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
 }
 
-void UUnrealArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)
+void URuntimeArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)
 {
 	if (!Archiver->OpenArchiveFromStorage(ArchivePath))
 	{
@@ -66,7 +66,7 @@ void UUnrealArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<F
 		{
 			FPaths::NormalizeDirectoryName(EntryName);
 
-			FUnrealArchiveEntry EntryInfo;
+			FRuntimeArchiveEntry EntryInfo;
 
 			if (!Archiver->GetArchiveEntryInfoByName(EntryName, EntryInfo))
 			{
@@ -87,7 +87,7 @@ void UUnrealArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<F
 	});
 }
 
-void UUnrealArchiverUnarchiveAsyncTask::OnRecursiveResult(bool bSuccess)
+void URuntimeArchiverUnarchiveAsyncTask::OnRecursiveResult(bool bSuccess)
 {
 	if (!bSuccess || !Archiver->CloseArchive())
 	{

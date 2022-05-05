@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UnrealArchiverTypes.h"
+#include "RuntimeArchiverTypes.h"
 #include "UObject/Object.h"
-#include "UnrealArchiverBase.generated.h"
+#include "RuntimeArchiverBase.generated.h"
 
 /**
  * The base class for the archiver. Do not create it manually!
  */
 UCLASS(Abstract, HideDropdown)
-class UNREALARCHIVER_API UUnrealArchiverBase : public UObject
+class RUNTIMEARCHIVER_API URuntimeArchiverBase : public UObject
 {
 	GENERATED_BODY()
 
@@ -20,13 +20,13 @@ public:
 	/**
 	 * Default constructor
 	 */
-	UUnrealArchiverBase();
+	URuntimeArchiverBase();
 	
 	/**
 	 * Create an archiver to archive/dearchive files and directories
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver", meta = (WorldContext="WorldContextObject", DeterminesOutputType = "ArchiverClass"))
-	static UUnrealArchiverBase* CreateUnrealArchiver(UObject* WorldContextObject, TSubclassOf<UUnrealArchiverBase> ArchiverClass);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver", meta = (WorldContext="WorldContextObject", DeterminesOutputType = "ArchiverClass"))
+	static URuntimeArchiverBase* CreateRuntimeArchiver(UObject* WorldContextObject, TSubclassOf<URuntimeArchiverBase> ArchiverClass);
 
 	//~ Begin UObject Interface.
 	virtual void BeginDestroy() override;
@@ -39,7 +39,7 @@ public:
 	 * @param ArchivePath Path to create an archive
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Create")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Create")
 	virtual bool CreateArchiveInStorage(FString ArchivePath);
 
 	/**
@@ -49,7 +49,7 @@ public:
 	 * @return Whether the operation was successful or not
 	 * @note Call GetArchiveDataFromMemory to get the archive data
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Create")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Create")
 	virtual bool CreateArchiveInMemory(int32 InitialAllocationSize = 0);
 
 	/**
@@ -58,7 +58,7 @@ public:
 	 * @param ArchivePath Path to open an archive
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Open")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Open")
 	virtual bool OpenArchiveFromStorage(FString ArchivePath);
 
 	/**
@@ -67,7 +67,7 @@ public:
 	 * @param ArchiveData Binary archive data
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Open")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Open")
 	bool OpenArchiveFromMemory(TArray<uint8> ArchiveData);
 	virtual bool OpenArchiveFromMemory(const TArray64<uint8>& ArchiveData);
 
@@ -76,7 +76,7 @@ public:
 	 *
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Close")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Close")
 	virtual bool CloseArchive();
 
 	/**
@@ -86,7 +86,7 @@ public:
 	 * @return Whether the operation was successful or not
 	 * @warning Call this only if you created the archive via CreateArchiveInMemory!
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Get")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Get")
 	bool GetArchiveDataFromMemory(TArray<uint8>& ArchiveData);
 
 	/**
@@ -103,7 +103,7 @@ public:
 	 *
 	 * @return Number of entries in the archive. -1 if nothing
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Get")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Get")
 	virtual int32 GetArchiveEntries();
 
 	/**
@@ -113,8 +113,8 @@ public:
 	 * @param EntryInfo Retrieved information about the entry
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Get")
-	virtual bool GetArchiveEntryInfoByName(FString EntryName, FUnrealArchiveEntry& EntryInfo);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Get")
+	virtual bool GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo);
 
 	/**
 	 * Get information about the archive entry by index
@@ -123,8 +123,8 @@ public:
 	 * @param EntryInfo Retrieved information about the entry
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Get")
-	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArchiveEntry& EntryInfo);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Get")
+	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeArchiveEntry& EntryInfo);
 
 	/**
 	 * Add entry from storage. In other words, import the file into the archive
@@ -135,7 +135,7 @@ public:
 	 * @return Whether the operation was successful or not
 	 * @note To add all files in a directory use "AddEntryFromStorage_Recursive" function
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Add")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
 	bool AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
@@ -146,8 +146,8 @@ public:
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Add")
-	void AddEntryFromStorage_Recursively(FUnrealArchiverRecursiveResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
+	void AddEntryFromStorage_Recursively(FRuntimeArchiverRecursiveResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 private:
 	/**
@@ -169,7 +169,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Add")
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
 	bool AddEntryFromMemory(FString EntryName, TArray<uint8> DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
@@ -190,8 +190,8 @@ public:
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Extract")
-	bool ExtractEntryToStorage(const FUnrealArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite = true);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
+	bool ExtractEntryToStorage(const FRuntimeArchiveEntry& EntryInfo, FString FilePath, bool bForceOverwrite = true);
 
 	/**
 	 * Recursively extract entries to storage. Must be used for directories only
@@ -202,8 +202,8 @@ public:
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Extract")
-	void ExtractEntryToStorage_Recursively(FUnrealArchiverRecursiveResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
+	void ExtractEntryToStorage_Recursively(FRuntimeArchiverRecursiveResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
 
 	/**
 	 * Extract entry into memory. In other words, extract the file from the archive into memory
@@ -212,8 +212,8 @@ public:
 	 * @param UnarchivedData Unarchived entry data
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Unreal Archiver|Extract")
-	bool ExtractEntryToMemory(const FUnrealArchiveEntry& EntryInfo, TArray<uint8>& UnarchivedData);
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
+	bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray<uint8>& UnarchivedData);
 
 	/**
 	 * Extract entry into memory. In other words, extract the file from the archive into memory. Prefer to use this function if possible
@@ -222,7 +222,7 @@ public:
 	 * @param UnarchivedData Unarchived entry data
 	 * @return Whether the operation was successful or not
 	 */
-	virtual bool ExtractEntryToMemory(const FUnrealArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData);
+	virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData);
 
 	/**
 	 * Initialize the archiver
@@ -245,11 +245,11 @@ public:
 	 * @param ErrorCode Archiver error code
 	 * @param ErrorString Error details
 	 */
-	virtual void ReportError(EUnrealArchiverErrorCode ErrorCode, const FString& ErrorString) const;
+	virtual void ReportError(ERuntimeArchiverErrorCode ErrorCode, const FString& ErrorString) const;
 
 	/** Archive mode */
-	EUnrealArchiveMode Mode;
+	ERuntimeArchiverMode Mode;
 
 	/** Archive location */
-	EUnrealArchiveLocation Location;
+	ERuntimeArchiverLocation Location;
 };

@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UnrealArchiverTypes.h"
+#include "RuntimeArchiverTypes.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
-#include "UnrealArchiverArchiveAsyncTask.generated.h"
+#include "RuntimeArchiverArchiveAsyncTask.generated.h"
 
-class UUnrealArchiverBase;
+class URuntimeArchiverBase;
 
 /**
  * Async task which simplifies archiving from an archive
  */
 UCLASS()
-class UUnrealArchiverArchiveAsyncTask : public UBlueprintAsyncActionBase
+class URuntimeArchiverArchiveAsyncTask : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
 
@@ -27,8 +27,8 @@ public:
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
-	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Unreal Archiver|Async")
-	static UUnrealArchiverArchiveAsyncTask* ArchiveDirectoryAsync(TSubclassOf<UUnrealArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
+	static URuntimeArchiverArchiveAsyncTask* ArchiveDirectoryAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
 	 * Asynchronously archive entries from file paths
@@ -38,21 +38,21 @@ public:
 	 * @param FilePaths File paths to be archived
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
-	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Unreal Archiver|Async")
-	static UUnrealArchiverArchiveAsyncTask* ArchiveFilesAsync(TSubclassOf<UUnrealArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
+	static URuntimeArchiverArchiveAsyncTask* ArchiveFilesAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/** Archiving completed successfully */
 	UPROPERTY(BlueprintAssignable)
-	FUnrealArchiverAsyncResult OnSuccess;
+	FRuntimeArchiverAsyncResult OnSuccess;
 
 	/** Unarchiving completed successfully */
 	UPROPERTY(BlueprintAssignable)
-	FUnrealArchiverAsyncResult OnFail;
+	FRuntimeArchiverAsyncResult OnFail;
 
 private:
 	/** Used archiver */
 	UPROPERTY()
-	UUnrealArchiverBase* Archiver;
+	URuntimeArchiverBase* Archiver;
 
 	void StartDirectory(FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel);
 	void StartFiles(FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel);

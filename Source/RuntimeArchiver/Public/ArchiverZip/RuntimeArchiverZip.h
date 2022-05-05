@@ -3,23 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UnrealArchiverBase.h"
-#include "UnrealArchiverZip.generated.h"
+#include "RuntimeArchiverBase.h"
+#include "RuntimeArchiverZip.generated.h"
 
 /**
  * Zip archiver class. Works with zip archives
  */
-UCLASS(BlueprintType, Category = "Unreal Archiver")
-class UNREALARCHIVER_API UUnrealArchiverZip : public UUnrealArchiverBase
+UCLASS(BlueprintType, Category = "Runtime Archiver")
+class RUNTIMEARCHIVER_API URuntimeArchiverZip : public URuntimeArchiverBase
 {
 	GENERATED_BODY()
 
 public:
 
 	/** Default constructor */
-	UUnrealArchiverZip();
+	URuntimeArchiverZip();
 	
-	//~ Begin UUnrealArchiverBase Interface.
+	//~ Begin URuntimeArchiverBase Interface.
 	virtual bool CreateArchiveInStorage(FString ArchivePath) override;
 	virtual bool CreateArchiveInMemory(int32 InitialAllocationSize = 0) override;
 
@@ -30,19 +30,19 @@ public:
 
 	virtual int32 GetArchiveEntries() override;
 
-	virtual bool GetArchiveEntryInfoByName(FString EntryName, FUnrealArchiveEntry& EntryInfo) override;
-	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArchiveEntry& EntryInfo) override;
+	virtual bool GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo) override;
+	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeArchiveEntry& EntryInfo) override;
 	
 	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel) override;
 	
-	virtual bool ExtractEntryToMemory(const FUnrealArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData) override;
+	virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData) override;
 
 	virtual bool Initialize() override;
 	virtual bool IsInitialized() const override;
 	virtual void Reset() override;
 
-	virtual void ReportError(EUnrealArchiverErrorCode ErrorCode, const FString& ErrorString) const override;
-	//~ End UUnrealArchiverBase Interface.
+	virtual void ReportError(ERuntimeArchiverErrorCode ErrorCode, const FString& ErrorString) const override;
+	//~ End URuntimeArchiverBase Interface.
 
 public:
 	/**

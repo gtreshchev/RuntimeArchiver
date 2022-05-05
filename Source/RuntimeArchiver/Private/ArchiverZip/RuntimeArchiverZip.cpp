@@ -1,21 +1,21 @@
 ﻿// Georgy Treshchev 2022.
 
-#include "ArchiverZip/UnrealArchiverZip.h"
+#include "ArchiverZip/RuntimeArchiverZip.h"
 
-#include "UnrealArchiverSubsystem.h"
-#include "UnrealArchiverDefines.h"
-#include "UnrealArchiverZipIncludes.h"
+#include "RuntimeArchiverSubsystem.h"
+#include "RuntimeArchiverDefines.h"
+#include "RuntimeArchiverZipIncludes.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 
-UUnrealArchiverZip::UUnrealArchiverZip()
-	: Super::UUnrealArchiverBase()
+URuntimeArchiverZip::URuntimeArchiverZip()
+	: Super::URuntimeArchiverBase()
   , bAppendMode(false)
   , MinizArchiver(nullptr)
 {
 }
 
-bool UUnrealArchiverZip::CreateArchiveInStorage(FString ArchivePath)
+bool URuntimeArchiverZip::CreateArchiveInStorage(FString ArchivePath)
 {
 	if (!Super::CreateArchiveInStorage(ArchivePath))
 	{
@@ -27,17 +27,17 @@ bool UUnrealArchiverZip::CreateArchiveInStorage(FString ArchivePath)
 	// Creating an archive in storage
 	if (!mz_zip_writer_init_file_v2(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*ArchivePath), 0, MZ_ZIP_FLAG_WRITE_ZIP64))
 	{
-		ReportError(EUnrealArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while initializing zip archive '%s'"), *ArchivePath));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while initializing zip archive '%s'"), *ArchivePath));
 		Reset();
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully created zip archive '%s' in '%s'"), *GetName(), *ArchivePath);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully created zip archive '%s' in '%s'"), *GetName(), *ArchivePath);
 
 	return true;
 }
 
-bool UUnrealArchiverZip::CreateArchiveInMemory(int32 InitialAllocationSize)
+bool URuntimeArchiverZip::CreateArchiveInMemory(int32 InitialAllocationSize)
 {
 	if (!Super::CreateArchiveInMemory(InitialAllocationSize))
 	{
@@ -47,17 +47,17 @@ bool UUnrealArchiverZip::CreateArchiveInMemory(int32 InitialAllocationSize)
 	// Creating an archive in memory
 	if (!mz_zip_writer_init_heap(static_cast<mz_zip_archive*>(MinizArchiver), 0, static_cast<size_t>(InitialAllocationSize)))
 	{
-		ReportError(EUnrealArchiverErrorCode::NotInitialized, TEXT("Unable to initialize archive in memory"));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to initialize archive in memory"));
 		Reset();
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully created zip archive '%s' in memory"), *GetName());
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully created zip archive '%s' in memory"), *GetName());
 
 	return true;
 }
 
-bool UUnrealArchiverZip::OpenArchiveFromStorage(FString ArchivePath)
+bool URuntimeArchiverZip::OpenArchiveFromStorage(FString ArchivePath)
 {
 	if (!Super::OpenArchiveFromStorage(ArchivePath))
 	{
@@ -69,17 +69,17 @@ bool UUnrealArchiverZip::OpenArchiveFromStorage(FString ArchivePath)
 	// Reading the archive from the file path
 	if (!mz_zip_reader_init_file(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*ArchivePath), 0))
 	{
-		ReportError(EUnrealArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while opening zip archive '%s' to read"), *ArchivePath));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while opening zip archive '%s' to read"), *ArchivePath));
 		Reset();
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully opened zip archive '%s' in '%s' to read"), *GetName(), *ArchivePath);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened zip archive '%s' in '%s' to read"), *GetName(), *ArchivePath);
 
 	return true;
 }
 
-bool UUnrealArchiverZip::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveData)
+bool URuntimeArchiverZip::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveData)
 {
 	if (!Super::OpenArchiveFromMemory(ArchiveData))
 	{
@@ -88,17 +88,17 @@ bool UUnrealArchiverZip::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveDat
 
 	if (!mz_zip_reader_init_mem(static_cast<mz_zip_archive*>(MinizArchiver), ArchiveData.GetData(), ArchiveData.Num(), MZ_ZIP_FLAG_WRITE_ZIP64))
 	{
-		ReportError(EUnrealArchiverErrorCode::NotInitialized,TEXT("Unable to open archive in memory"));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized,TEXT("Unable to open archive in memory"));
 		Reset();
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully opened zip archive '%s' in memory"), *GetName());
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened zip archive '%s' in memory"), *GetName());
 
 	return true;
 }
 
-bool UUnrealArchiverZip::CloseArchive()
+bool URuntimeArchiverZip::CloseArchive()
 {
 	if (!Super::CloseArchive())
 	{
@@ -109,14 +109,14 @@ bool UUnrealArchiverZip::CloseArchive()
 
 	switch (Mode)
 	{
-	case EUnrealArchiveMode::Read:
+	case ERuntimeArchiverMode::Read:
 		{
 			bResult = static_cast<bool>(mz_zip_reader_end(static_cast<mz_zip_archive*>(MinizArchiver)));
 			break;
 		}
-	case EUnrealArchiveMode::Write:
+	case ERuntimeArchiverMode::Write:
 		{
-			if (Location == EUnrealArchiveLocation::Storage)
+			if (Location == ERuntimeArchiverLocation::Storage)
 			{
 				bResult = static_cast<bool>(mz_zip_writer_finalize_archive(static_cast<mz_zip_archive*>(MinizArchiver)));
 			}
@@ -137,18 +137,18 @@ bool UUnrealArchiverZip::CloseArchive()
 
 	if (!bResult)
 	{
-		ReportError(EUnrealArchiverErrorCode::CloseError, TEXT("Failed to close the archive"));
+		ReportError(ERuntimeArchiverErrorCode::CloseError, TEXT("Failed to close the archive"));
 		return false;
 	}
 
 	Reset();
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully closed zip archive '%s'"), *GetName());
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully closed zip archive '%s'"), *GetName());
 
 	return true;
 }
 
-int32 UUnrealArchiverZip::GetArchiveEntries()
+int32 URuntimeArchiverZip::GetArchiveEntries()
 {
 	if (Super::GetArchiveEntries() < 0)
 	{
@@ -158,7 +158,7 @@ int32 UUnrealArchiverZip::GetArchiveEntries()
 	return static_cast<int32>(mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver)));
 }
 
-bool UUnrealArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FUnrealArchiveEntry& EntryInfo)
+bool URuntimeArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
 {
 	if (!Super::GetArchiveEntryInfoByName(EntryName, EntryInfo))
 	{
@@ -172,14 +172,14 @@ bool UUnrealArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FUnrealArc
 
 	if (EntryIndex == -1)
 	{
-		ReportError(EUnrealArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to find the entry index under the entry name '%s'"), *EntryName));
+		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to find the entry index under the entry name '%s'"), *EntryName));
 		return false;
 	}
 
 	return GetArchiveEntryInfoByIndex(EntryIndex, EntryInfo);
 }
 
-bool UUnrealArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArchiveEntry& EntryInfo)
+bool URuntimeArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeArchiveEntry& EntryInfo)
 {
 	if (!Super::GetArchiveEntryInfoByIndex(EntryIndex, EntryInfo))
 	{
@@ -192,7 +192,7 @@ bool UUnrealArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArc
 
 	if (!bResult)
 	{
-		ReportError(EUnrealArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to get entry information by index %d"), EntryIndex));
+		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to get entry information by index %d"), EntryIndex));
 		return false;
 	}
 
@@ -211,7 +211,7 @@ bool UUnrealArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FUnrealArc
 	return true;
 }
 
-bool UUnrealArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel)
 {
 	if (!Super::AddEntryFromMemory(EntryName, DataToBeArchived, CompressionLevel))
 	{
@@ -228,25 +228,25 @@ bool UUnrealArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<ui
 
 	if (!bResult)
 	{
-		ReportError(EUnrealArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add entry '%s' from memory"), *EntryName));
+		ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add entry '%s' from memory"), *EntryName));
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully added entry '%s' from memory with size '%lld'"), *EntryName, static_cast<int64>(DataToBeArchived.Num()));
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added entry '%s' from memory with size '%lld'"), *EntryName, static_cast<int64>(DataToBeArchived.Num()));
 
 	return true;
 }
 
-bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData)
+bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData)
 {
 	if (!Super::ExtractEntryToMemory(EntryInfo, UnarchivedData))
 	{
 		return false;
 	}
 
-	if (Mode != EUnrealArchiveMode::Read)
+	if (Mode != ERuntimeArchiverMode::Read)
 	{
-		ReportError(EUnrealArchiverErrorCode::UnsupportedMode, FString::Printf(TEXT("Only '%s' mode is supported for extracting zip entries (using mode: '%s')"), *UEnum::GetValueAsName(EUnrealArchiveMode::Read).ToString(), *UEnum::GetValueAsName(Mode).ToString()));
+		ReportError(ERuntimeArchiverErrorCode::UnsupportedMode, FString::Printf(TEXT("Only '%s' mode is supported for extracting zip entries (using mode: '%s')"), *UEnum::GetValueAsName(ERuntimeArchiverMode::Read).ToString(), *UEnum::GetValueAsName(Mode).ToString()));
 		return false;
 	}
 
@@ -254,7 +254,7 @@ bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryIn
 
 	if (EntryInfo.Index > (NumOfArchiveEntries - 1) || EntryInfo.Index < 0)
 	{
-		ReportError(EUnrealArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
+		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
 		return false;
 	}
 
@@ -264,7 +264,7 @@ bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryIn
 
 	if (EntryInMemoryPtr == nullptr)
 	{
-		ReportError(EUnrealArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract entry '%s' into memory"), *EntryInfo.Name));
+		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract entry '%s' into memory"), *EntryInfo.Name));
 		return false;
 	}
 
@@ -272,12 +272,12 @@ bool UUnrealArchiverZip::ExtractEntryToMemory(const FUnrealArchiveEntry& EntryIn
 
 	FMemory::Free(EntryInMemoryPtr);
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully extracted entry '%s' into memory"), *EntryInfo.Name);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted entry '%s' into memory"), *EntryInfo.Name);
 
 	return true;
 }
 
-bool UUnrealArchiverZip::Initialize()
+bool URuntimeArchiverZip::Initialize()
 {
 	if (!Super::Initialize())
 	{
@@ -289,21 +289,21 @@ bool UUnrealArchiverZip::Initialize()
 
 	if (MinizArchiver == nullptr)
 	{
-		ReportError(EUnrealArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for Miniz archiver"));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for Miniz archiver"));
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully initialized zip archiver '%s'"), *GetName());
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully initialized zip archiver '%s'"), *GetName());
 
 	return true;
 }
 
-bool UUnrealArchiverZip::IsInitialized() const
+bool URuntimeArchiverZip::IsInitialized() const
 {
 	return Super::IsInitialized() && MinizArchiver != nullptr;
 }
 
-void UUnrealArchiverZip::Reset()
+void URuntimeArchiverZip::Reset()
 {
 	if (MinizArchiver != nullptr)
 	{
@@ -313,10 +313,10 @@ void UUnrealArchiverZip::Reset()
 
 	Super::Reset();
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully uninitialized zip archiver '%s'"), *GetName());
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully uninitialized zip archiver '%s'"), *GetName());
 }
 
-void UUnrealArchiverZip::ReportError(EUnrealArchiverErrorCode ErrorCode, const FString& ErrorString) const
+void URuntimeArchiverZip::ReportError(ERuntimeArchiverErrorCode ErrorCode, const FString& ErrorString) const
 {
 	FString ReadyErrorString{FString::Printf(TEXT("%s: %s."), *UEnum::GetValueAsName(ErrorCode).ToString(), *ErrorString)};
 
@@ -338,7 +338,7 @@ void UUnrealArchiverZip::ReportError(EUnrealArchiverErrorCode ErrorCode, const F
 	Super::ReportError(ErrorCode, ReadyErrorString);
 }
 
-bool UUnrealArchiverZip::OpenArchiveFromStorageToAppend(FString ArchivePath)
+bool URuntimeArchiverZip::OpenArchiveFromStorageToAppend(FString ArchivePath)
 {
 	if (!Initialize())
 	{
@@ -349,19 +349,19 @@ bool UUnrealArchiverZip::OpenArchiveFromStorageToAppend(FString ArchivePath)
 
 	if (ArchivePath.IsEmpty() || !FPaths::FileExists(ArchivePath))
 	{
-		ReportError(EUnrealArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Archive '%s' does not exist"), *ArchivePath));
+		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Archive '%s' does not exist"), *ArchivePath));
 		return false;
 	}
 
 	bAppendMode = true;
 
-	Mode = EUnrealArchiveMode::Write;
-	Location = EUnrealArchiveLocation::Storage;
+	Mode = ERuntimeArchiverMode::Write;
+	Location = ERuntimeArchiverLocation::Storage;
 
 	// Reading the archive from the file path
 	if (!mz_zip_reader_init_file(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*ArchivePath), 0))
 	{
-		ReportError(EUnrealArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while opening zip archive '%s'"), *ArchivePath));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while opening zip archive '%s'"), *ArchivePath));
 		Reset();
 		return false;
 	}
@@ -370,12 +370,12 @@ bool UUnrealArchiverZip::OpenArchiveFromStorageToAppend(FString ArchivePath)
 	if (!mz_zip_writer_init_from_reader_v2(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*ArchivePath), 0))
 	{
 		mz_zip_reader_end(static_cast<mz_zip_archive*>(MinizArchiver));
-		ReportError(EUnrealArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while opening zip archive '%s' to append"), *ArchivePath));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, FString::Printf(TEXT("An error occurred while opening zip archive '%s' to append"), *ArchivePath));
 		Reset();
 		return false;
 	}
 
-	UE_LOG(LogUnrealArchiver, Log, TEXT("Successfully opened zip archive '%s' in '%s' to append"), *GetName(), *ArchivePath);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened zip archive '%s' in '%s' to append"), *GetName(), *ArchivePath);
 
 	return true;
 }

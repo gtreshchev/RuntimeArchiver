@@ -4,14 +4,14 @@ using System;
 using System.IO;
 using UnrealBuildTool;
 
-public class UnrealArchiver : ModuleRules
+public class RuntimeArchiver : ModuleRules
 {
 	private string MinizPath
 	{
 		get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "../ThirdParty/miniz")); }
 	}
 
-	public UnrealArchiver(ReadOnlyTargetRules Target) : base(Target)
+	public RuntimeArchiver(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 

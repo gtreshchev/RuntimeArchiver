@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UnrealArchiverTypes.h"
+#include "RuntimeArchiverTypes.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
-#include "UnrealArchiverUnarchiveAsyncTask.generated.h"
+#include "RuntimeArchiverUnarchiveAsyncTask.generated.h"
 
-class UUnrealArchiverBase;
+class URuntimeArchiverBase;
 
 /**
  * Async task which simplifies unarchiving from an archive
  */
 UCLASS()
-class UNREALARCHIVER_API UUnrealArchiverUnarchiveAsyncTask : public UBlueprintAsyncActionBase
+class RUNTIMEARCHIVER_API URuntimeArchiverUnarchiveAsyncTask : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
 
@@ -28,8 +28,8 @@ public:
 	 * @param bAddParentDirectory Whether to add the specified directory as a parent
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
-	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Unreal Archiver|Async")
-	static UUnrealArchiverUnarchiveAsyncTask* UnarchiveDirectoryAsync(TSubclassOf<UUnrealArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
+	static URuntimeArchiverUnarchiveAsyncTask* UnarchiveDirectoryAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
 
 	/**
 	 * Asynchronously unarchive entries to storage
@@ -40,21 +40,21 @@ public:
 	 * @param DirectoryPath Path to the directory for exporting entries
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
-	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Unreal Archiver|Async")
-	static UUnrealArchiverUnarchiveAsyncTask* UnarchiveFilesAsync(TSubclassOf<UUnrealArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite = true);
+	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
+	static URuntimeArchiverUnarchiveAsyncTask* UnarchiveFilesAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite = true);
 
 	/** Unarchiving completed successfully */
 	UPROPERTY(BlueprintAssignable)
-	FUnrealArchiverAsyncResult OnSuccess;
+	FRuntimeArchiverAsyncResult OnSuccess;
 
 	/** Unarchiving was not successful */
 	UPROPERTY(BlueprintAssignable)
-	FUnrealArchiverAsyncResult OnFail;
+	FRuntimeArchiverAsyncResult OnFail;
 
 private:
 	/** Used archiver */
 	UPROPERTY()
-	UUnrealArchiverBase* Archiver;
+	URuntimeArchiverBase* Archiver;
 
 	void StartDirectory(FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite);
 	void StartFiles(FString ArchivePath, TArray<FString> EntryPaths, FString DirectoryPath, bool bForceOverwrite);
