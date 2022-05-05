@@ -38,7 +38,7 @@ void URuntimeArchiverUnarchiveAsyncTask::StartDirectory(FString ArchivePath, FSt
 
 	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult);
 
-	Archiver->ExtractEntriesToStorage_Recursively(OperationResult, MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
+	Archiver->ExtractEntriesToStorage_Directory(OperationResult, MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
 }
 
 void URuntimeArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)

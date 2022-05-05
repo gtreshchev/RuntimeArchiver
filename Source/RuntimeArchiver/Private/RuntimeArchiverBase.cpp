@@ -288,7 +288,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationR
 	});
 }
 
-void URuntimeArchiverBase::AddEntriesFromStorage_Recursively(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
+void URuntimeArchiverBase::AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -328,7 +328,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage_Recursively(FRuntimeArchiverAsy
 
 	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel]()
 	{
-		const bool bResult{AddEntriesFromStorage_Recursively_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel)};
+		const bool bResult{AddEntriesFromStorage_Directory_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel)};
 
 		if (bResult)
 		{
@@ -342,7 +342,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage_Recursively(FRuntimeArchiverAsy
 	});
 }
 
-bool URuntimeArchiverBase::AddEntriesFromStorage_Recursively_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverBase::AddEntriesFromStorage_Directory_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel)
 {
 	class FDirectoryVisitor_EntryAppender : public IPlatformFile::FDirectoryVisitor
 	{
@@ -538,7 +538,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperatio
 	});
 }
 
-void URuntimeArchiverBase::ExtractEntriesToStorage_Recursively(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
+void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
 	if (!IsInitialized())
 	{

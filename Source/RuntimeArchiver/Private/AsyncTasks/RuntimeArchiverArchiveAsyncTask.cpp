@@ -37,7 +37,7 @@ void URuntimeArchiverArchiveAsyncTask::StartDirectory(FString ArchivePath, FStri
 
 	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnAsyncResult);
 
-	Archiver->AddEntriesFromStorage_Recursively(OperationResult, DirectoryPath, bAddParentDirectory, CompressionLevel);
+	Archiver->AddEntriesFromStorage_Directory(OperationResult, DirectoryPath, bAddParentDirectory, CompressionLevel);
 }
 
 void URuntimeArchiverArchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel)
