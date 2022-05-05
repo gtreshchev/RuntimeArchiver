@@ -29,7 +29,7 @@ public:
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
-	static URuntimeArchiverUnarchiveAsyncTask* UnarchiveDirectoryAsync(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
+	static URuntimeArchiverUnarchiveAsyncTask* UnarchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
 
 	/**
 	 * Asynchronously unarchive entries to storage
