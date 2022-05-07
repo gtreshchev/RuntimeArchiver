@@ -649,6 +649,11 @@ bool URuntimeArchiverBase::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entr
 	return true;
 }
 
+bool URuntimeArchiverBase::Initialize()
+{
+	return true;
+}
+
 bool URuntimeArchiverBase::IsInitialized() const
 {
 	return Mode != ERuntimeArchiverMode::Undefined && Location != ERuntimeArchiverLocation::Undefined;

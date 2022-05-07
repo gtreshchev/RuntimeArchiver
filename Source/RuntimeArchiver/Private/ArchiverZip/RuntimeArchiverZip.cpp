@@ -6,7 +6,6 @@
 #include "RuntimeArchiverDefines.h"
 #include "RuntimeArchiverZipIncludes.h"
 #include "Misc/Paths.h"
-#include "Misc/FileHelper.h"
 
 URuntimeArchiverZip::URuntimeArchiverZip()
 	: Super::URuntimeArchiverBase()
@@ -322,15 +321,15 @@ void URuntimeArchiverZip::ReportError(ERuntimeArchiverErrorCode ErrorCode, const
 
 	if (IsInitialized())
 	{
-		mz_zip_archive* MinizArchiveReal{static_cast<mz_zip_archive*>(MinizArchiver)};
+		mz_zip_archive* MinizArchiverReal{static_cast<mz_zip_archive*>(MinizArchiver)};
 
-		const mz_zip_error LastMinizError{mz_zip_get_last_error(MinizArchiveReal)};
+		const mz_zip_error LastMinizError{mz_zip_get_last_error(MinizArchiverReal)};
 		const FString LastMinizErrorStr{UTF8_TO_TCHAR(mz_zip_get_error_string(LastMinizError))};
 
 		// Cleaning last miniz error to avoid getting the same error next time
 		if (LastMinizError != MZ_ZIP_NO_ERROR)
 		{
-			mz_zip_set_error(MinizArchiveReal, MZ_ZIP_NO_ERROR);
+			mz_zip_set_error(MinizArchiverReal, MZ_ZIP_NO_ERROR);
 			ReadyErrorString += FString::Printf(TEXT("\nMiniz error details: '%s'."), *LastMinizErrorStr);
 		}
 	}

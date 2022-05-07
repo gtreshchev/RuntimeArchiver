@@ -51,11 +51,13 @@ public:
 	 * @param ArchivePath Path to open an archive
 	 * @return Whether the operation was successful or not
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Open")
 	bool OpenArchiveFromStorageToAppend(FString ArchivePath);
 
 private:
 	/** Whether to use append mode or not */
 	bool bAppendMode;
+
+	/** Miniz archiver */
 	void* MinizArchiver;
 };

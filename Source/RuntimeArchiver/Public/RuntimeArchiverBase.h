@@ -247,7 +247,7 @@ public:
 	/**
 	 * Initialize the archiver
 	 */
-	virtual bool Initialize() { return true; }
+	virtual bool Initialize();
 
 	/**
 	 * Check whether the archiver is initialized
