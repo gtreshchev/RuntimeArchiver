@@ -10,7 +10,10 @@ URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::Unarchiv
 
 	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
 
-	ArchiveTask->StartDirectory(MoveTemp(ArchivePath), MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
+	{
+		ArchiveTask->OperationType = EOperationType::Directory;
+		ArchiveTask->DirectoryInfo = {MoveTemp(ArchivePath), MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite};
+	}
 
 	return ArchiveTask;
 }
@@ -21,59 +24,79 @@ URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::Unarchiv
 
 	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
 
-	ArchiveTask->StartFiles(MoveTemp(ArchivePath), MoveTemp(EntryNames), MoveTemp(DirectoryPath), bForceOverwrite);
+	{
+		ArchiveTask->OperationType = EOperationType::Files;
+		ArchiveTask->FilesInfo = {MoveTemp(ArchivePath), MoveTemp(EntryNames), MoveTemp(DirectoryPath), bForceOverwrite};
+	}
 
 	return ArchiveTask;
 }
 
-void URuntimeArchiverUnarchiveAsyncTask::StartDirectory(FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
+void URuntimeArchiverUnarchiveAsyncTask::Activate()
 {
-	if (!Archiver->OpenArchiveFromStorage(ArchivePath))
+	Super::Activate();
+	
+	switch (OperationType)
 	{
-		OnFail.Broadcast();
-		return;
+	case EOperationType::Directory:
+		{
+			StartDirectory();
+		}
+	case EOperationType::Files:
+		{
+			StartFiles();
+		}
 	}
-
-	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult);
-
-	Archiver->ExtractEntriesToStorage_Directory(OperationResult, MoveTemp(EntryName), MoveTemp(DirectoryPath), bAddParentDirectory, bForceOverwrite);
 }
 
-void URuntimeArchiverUnarchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> EntryNames, FString DirectoryPath, bool bForceOverwrite)
+void URuntimeArchiverUnarchiveAsyncTask::StartDirectory()
 {
-	if (!Archiver->OpenArchiveFromStorage(ArchivePath))
+	if (!Archiver->OpenArchiveFromStorage(DirectoryInfo.ArchivePath))
 	{
 		OnFail.Broadcast();
 		return;
 	}
-	
-	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult);
+
+	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnResult);
+
+	Archiver->ExtractEntriesToStorage_Directory(OperationResult, MoveTemp(DirectoryInfo.EntryName), MoveTemp(DirectoryInfo.DirectoryPath), DirectoryInfo.bAddParentDirectory, DirectoryInfo.bForceOverwrite);
+}
+
+void URuntimeArchiverUnarchiveAsyncTask::StartFiles()
+{
+	if (!Archiver->OpenArchiveFromStorage(FilesInfo.ArchivePath))
+	{
+		OnFail.Broadcast();
+		return;
+	}
+
+	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnResult);
 
 	TArray<FRuntimeArchiveEntry> Entries;
-	
+
 	// Getting archive entries by names
 	{
-		for (const FString& EntryName : EntryNames)
+		for (const FString& EntryName : FilesInfo.EntryNames)
 		{
 			FRuntimeArchiveEntry Entry;
 			if (!Archiver->GetArchiveEntryInfoByName(EntryName, Entry))
 			{
 				Archiver->ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to find '%s' archive entry"), *EntryName));
-				OnAsyncResult(false);
+				OnResult(false);
 				return;
 			}
-			
+
 			Entries.Add(Entry);
 		}
 	}
-	
-	Archiver->ExtractEntriesToStorage(OperationResult, MoveTemp(Entries), MoveTemp(DirectoryPath), bForceOverwrite);
+
+	Archiver->ExtractEntriesToStorage(OperationResult, MoveTemp(Entries), MoveTemp(FilesInfo.DirectoryPath), MoveTemp(FilesInfo.bForceOverwrite));
 }
 
-void URuntimeArchiverUnarchiveAsyncTask::OnAsyncResult(bool bSuccess)
+void URuntimeArchiverUnarchiveAsyncTask::OnResult(bool bSuccess)
 {
 	OperationResult.Clear();
-	
+
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
 		OnFail.Broadcast();

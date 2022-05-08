@@ -49,7 +49,36 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnFail;
 
+protected:
+	//~ Begin UBlueprintAsyncActionBase interface.
+	virtual void Activate() override;
+	//~ End UBlueprintAsyncActionBase interface.
+
 private:
+	/** Information about the operation to archive the directory */
+	struct
+	{
+		FString ArchivePath;
+		FString DirectoryPath;
+		bool bAddParentDirectory;
+		EUnrealEntryCompressionLevel CompressionLevel;
+	} DirectoryInfo;
+
+	/** Information about the operation to archive files */
+	struct
+	{
+		FString ArchivePath;
+		TArray<FString> FilePaths;
+		EUnrealEntryCompressionLevel CompressionLevel;
+	} FilesInfo;
+
+	/** Specific archiving operation */
+	enum class EOperationType : uint8
+	{
+		Directory,
+		Files
+	} OperationType;
+
 	/** Used archiver */
 	UPROPERTY()
 	URuntimeArchiverBase* Archiver;
@@ -57,9 +86,17 @@ private:
 	/** Operation result delegate */
 	FRuntimeArchiverAsyncOperationResult OperationResult;
 
-	void StartDirectory(FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel);
-	void StartFiles(FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel);
+	/** Start archiving directory operation */
+	void StartDirectory();
 
+	/** Start archiving files operation */
+	void StartFiles();
+
+	/**
+	 * Execute the result of the operation
+	 *
+	 * @param bSuccess Whether the result is successful or not
+	 */
 	UFUNCTION()
-	void OnAsyncResult(bool bSuccess);
+	void OnResult(bool bSuccess);
 };

@@ -10,7 +10,10 @@ URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveDirec
 
 	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
 
-	ArchiveTask->StartDirectory(MoveTemp(ArchivePath), MoveTemp(DirectoryPath), bAddParentDirectory, CompressionLevel);
+	{
+		ArchiveTask->OperationType = EOperationType::Directory;
+		ArchiveTask->DirectoryInfo = {MoveTemp(ArchivePath), MoveTemp(DirectoryPath), bAddParentDirectory, CompressionLevel};
+	}
 
 	return ArchiveTask;
 }
@@ -21,39 +24,59 @@ URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveFiles
 
 	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
 
-	ArchiveTask->StartFiles(MoveTemp(ArchivePath), MoveTemp(FilePaths), CompressionLevel);
+	{
+		ArchiveTask->OperationType = EOperationType::Files;
+		ArchiveTask->FilesInfo = {MoveTemp(ArchivePath), MoveTemp(FilePaths), CompressionLevel};
+	}
 
 	return ArchiveTask;
 }
 
-void URuntimeArchiverArchiveAsyncTask::StartDirectory(FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
+void URuntimeArchiverArchiveAsyncTask::Activate()
 {
-	if (!Archiver->CreateArchiveInStorage(ArchivePath))
+	Super::Activate();
+
+	switch (OperationType)
+	{
+	case EOperationType::Directory:
+		{
+			StartDirectory();
+		}
+	case EOperationType::Files:
+		{
+			StartFiles();
+		}
+	}
+}
+
+void URuntimeArchiverArchiveAsyncTask::StartDirectory()
+{
+	if (!Archiver->CreateArchiveInStorage(DirectoryInfo.ArchivePath))
 	{
 		OnFail.Broadcast();
 	}
 
-	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnAsyncResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult);
 
-	Archiver->AddEntriesFromStorage_Directory(OperationResult, DirectoryPath, bAddParentDirectory, CompressionLevel);
+	Archiver->AddEntriesFromStorage_Directory(OperationResult, MoveTemp(DirectoryInfo.DirectoryPath), DirectoryInfo.bAddParentDirectory, DirectoryInfo.CompressionLevel);
 }
 
-void URuntimeArchiverArchiveAsyncTask::StartFiles(FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel)
+void URuntimeArchiverArchiveAsyncTask::StartFiles()
 {
-	if (!Archiver->CreateArchiveInStorage(ArchivePath))
+	if (!Archiver->CreateArchiveInStorage(FilesInfo.ArchivePath))
 	{
 		OnFail.Broadcast();
 	}
 
-	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnAsyncResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult);
 
-	Archiver->AddEntriesFromStorage(OperationResult, MoveTemp(FilePaths), CompressionLevel);
+	Archiver->AddEntriesFromStorage(OperationResult, MoveTemp(FilesInfo.FilePaths), FilesInfo.CompressionLevel);
 }
 
-void URuntimeArchiverArchiveAsyncTask::OnAsyncResult(bool bSuccess)
+void URuntimeArchiverArchiveAsyncTask::OnResult(bool bSuccess)
 {
 	OperationResult.Clear();
-	
+
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
 		OnFail.Broadcast();
