@@ -54,6 +54,7 @@ void URuntimeArchiverArchiveAsyncTask::StartDirectory()
 	if (!Archiver->CreateArchiveInStorage(DirectoryInfo.ArchivePath))
 	{
 		OnFail.Broadcast();
+		return;
 	}
 
 	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult);
@@ -66,6 +67,7 @@ void URuntimeArchiverArchiveAsyncTask::StartFiles()
 	if (!Archiver->CreateArchiveInStorage(FilesInfo.ArchivePath))
 	{
 		OnFail.Broadcast();
+		return;
 	}
 
 	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult);
