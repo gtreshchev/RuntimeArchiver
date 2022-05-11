@@ -7,6 +7,7 @@
 #include "Async/Async.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
+#include "HAL/PlatformFileManager.h"
 
 URuntimeArchiverBase::URuntimeArchiverBase()
 	: Mode(ERuntimeArchiverMode::Undefined)

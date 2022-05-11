@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "RuntimeArchiverTypes.h"
+#include "RuntimeArchiverBase.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "RuntimeArchiverArchiveAsyncTask.generated.h"
 
