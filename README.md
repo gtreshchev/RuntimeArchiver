@@ -31,7 +31,7 @@
 
 ## Additional information
 
-Low-level work with archives is done on [Miniz](https://github.com/richgel999/miniz).
+Low-level work with zip archives is done on [Miniz](https://github.com/richgel999/miniz).
 
 ## Legal info
 
