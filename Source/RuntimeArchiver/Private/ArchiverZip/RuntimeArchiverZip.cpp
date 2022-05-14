@@ -147,6 +147,28 @@ bool URuntimeArchiverZip::CloseArchive()
 	return true;
 }
 
+bool URuntimeArchiverZip::GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData)
+{
+	if (!Super::GetArchiveDataFromMemory(ArchiveData))
+	{
+		return false;
+	}
+
+	mz_zip_archive* MinizArchiverReal = static_cast<mz_zip_archive*>(MinizArchiver);
+
+	if (!mz_zip_writer_finalize_archive(MinizArchiverReal))
+	{
+		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to get zip archive data from memory")));
+		return false;
+	}
+
+	const int64 ArchiveSize{static_cast<int64>(MinizArchiverReal->m_archive_size)};
+
+	ArchiveData = TArray64<uint8>(static_cast<uint8*>(MinizArchiverReal->m_pState->m_pMem), ArchiveSize);
+
+	return true;
+}
+
 int32 URuntimeArchiverZip::GetArchiveEntries()
 {
 	if (Super::GetArchiveEntries() < 0)
