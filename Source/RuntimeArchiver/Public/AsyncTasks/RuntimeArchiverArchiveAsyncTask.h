@@ -2,11 +2,10 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "RuntimeArchiverBase.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "RuntimeArchiverArchiveAsyncTask.generated.h"
-
-class URuntimeArchiverBase;
 
 /**
  * Async task which simplifies archiving from an archive

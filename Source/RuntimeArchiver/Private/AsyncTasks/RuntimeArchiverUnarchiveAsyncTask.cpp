@@ -2,8 +2,6 @@
 
 #include "AsyncTasks/RuntimeArchiverUnarchiveAsyncTask.h"
 
-#include "RuntimeArchiverBase.h"
-
 URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::UnarchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
 	URuntimeArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverUnarchiveAsyncTask>();

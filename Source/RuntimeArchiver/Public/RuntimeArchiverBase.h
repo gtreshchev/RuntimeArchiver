@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeArchiverTypes.h"
 #include "UObject/Object.h"
+#include "Templates/SubclassOf.h"
 #include "RuntimeArchiverBase.generated.h"
 
 /**

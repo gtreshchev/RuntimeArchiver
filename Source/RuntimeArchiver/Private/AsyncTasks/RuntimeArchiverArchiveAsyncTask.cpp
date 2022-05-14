@@ -2,8 +2,6 @@
 
 #include "AsyncTasks/RuntimeArchiverArchiveAsyncTask.h"
 
-#include "RuntimeArchiverBase.h"
-
 URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
 {
 	URuntimeArchiverArchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverArchiveAsyncTask>();

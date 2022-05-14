@@ -6,9 +6,14 @@ using UnrealBuildTool;
 
 public class RuntimeArchiver : ModuleRules
 {
+	
+	private string ThirdPartPath
+	{
+		get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "../ThirdParty/")); }
+	}
 	private string MinizPath
 	{
-		get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "../ThirdParty/miniz")); }
+		get { return Path.GetFullPath(Path.Combine(ModuleDirectory, ThirdPartPath, "miniz")); }
 	}
 
 	public RuntimeArchiver(ReadOnlyTargetRules Target) : base(Target)
