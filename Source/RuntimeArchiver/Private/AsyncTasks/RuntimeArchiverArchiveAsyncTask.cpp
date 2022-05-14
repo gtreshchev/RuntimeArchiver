@@ -39,10 +39,12 @@ void URuntimeArchiverArchiveAsyncTask::Activate()
 	case EOperationType::Directory:
 		{
 			StartDirectory();
+			break;
 		}
 	case EOperationType::Files:
 		{
 			StartFiles();
+			break;
 		}
 	}
 }
