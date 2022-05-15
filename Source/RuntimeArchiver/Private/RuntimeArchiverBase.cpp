@@ -62,6 +62,13 @@ bool URuntimeArchiverBase::CreateArchiveInMemory(int32 InitialAllocationSize)
 		return false;
 	}
 
+	if (InitialAllocationSize < 0)
+	{
+		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("The initial allication size must be >= 0 (specified size: %d)"), InitialAllocationSize));
+		Reset();
+		return false;
+	}
+
 	Mode = ERuntimeArchiverMode::Write;
 	Location = ERuntimeArchiverLocation::Memory;
 
