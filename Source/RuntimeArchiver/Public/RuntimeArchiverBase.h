@@ -29,9 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver", meta = (WorldContext="WorldContextObject", DeterminesOutputType = "ArchiverClass"))
 	static URuntimeArchiverBase* CreateRuntimeArchiver(UObject* WorldContextObject, TSubclassOf<URuntimeArchiverBase> ArchiverClass);
 
-	//~ Begin UObject Interface.
+	//~ Begin UObject Interface
 	virtual void BeginDestroy() override;
-	//~ End UObject Interface.
+	//~ End UObject Interface
 
 public:
 	/**

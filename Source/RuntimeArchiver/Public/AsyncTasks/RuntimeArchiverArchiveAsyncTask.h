@@ -48,9 +48,9 @@ public:
 	FRuntimeArchiverAsyncActionResult OnFail;
 
 protected:
-	//~ Begin UBlueprintAsyncActionBase interface.
+	//~ Begin UBlueprintAsyncActionBase Interface
 	virtual void Activate() override;
-	//~ End UBlueprintAsyncActionBase interface.
+	//~ End UBlueprintAsyncActionBase Interface
 
 private:
 	/** Information about the operation to archive the directory */

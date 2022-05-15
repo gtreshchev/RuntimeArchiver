@@ -19,7 +19,7 @@ public:
 	/** Default constructor */
 	URuntimeArchiverZip();
 	
-	//~ Begin URuntimeArchiverBase Interface.
+	//~ Begin URuntimeArchiverBase Interface
 	virtual bool CreateArchiveInStorage(FString ArchivePath) override;
 	virtual bool CreateArchiveInMemory(int32 InitialAllocationSize = 0) override;
 
@@ -44,7 +44,7 @@ public:
 	virtual void Reset() override;
 
 	virtual void ReportError(ERuntimeArchiverErrorCode ErrorCode, const FString& ErrorString) const override;
-	//~ End URuntimeArchiverBase Interface.
+	//~ End URuntimeArchiverBase Interface
 
 public:
 	/**
