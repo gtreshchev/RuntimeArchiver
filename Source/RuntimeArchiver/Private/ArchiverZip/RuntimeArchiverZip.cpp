@@ -87,12 +87,12 @@ bool URuntimeArchiverZip::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveDa
 
 	if (!mz_zip_reader_init_mem(static_cast<mz_zip_archive*>(MinizArchiver), ArchiveData.GetData(), ArchiveData.Num(), MZ_ZIP_FLAG_WRITE_ZIP64))
 	{
-		ReportError(ERuntimeArchiverErrorCode::NotInitialized,TEXT("Unable to open archive in memory"));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized,TEXT("Unable to open in-memory zip archive to read"));
 		Reset();
 		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened zip archive '%s' in memory"), *GetName());
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened in-memory zip archive '%s' to read"), *GetName());
 
 	return true;
 }
@@ -166,6 +166,8 @@ bool URuntimeArchiverZip::GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData)
 
 	ArchiveData = TArray64<uint8>(static_cast<uint8*>(MinizArchiverReal->m_pState->m_pMem), ArchiveSize);
 
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved zip archive data from memory with size '%lld'"), ArchiveSize);
+
 	return true;
 }
 
@@ -176,7 +178,11 @@ int32 URuntimeArchiverZip::GetArchiveEntries()
 		return false;
 	}
 
-	return static_cast<int32>(mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver)));
+	const int32 NumOfEntries{ static_cast<int32>(mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver)))};
+
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d zip entries"), NumOfEntries);
+
+	return true;
 }
 
 bool URuntimeArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
@@ -193,7 +199,7 @@ bool URuntimeArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FRuntimeA
 
 	if (EntryIndex == -1)
 	{
-		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to find the entry index under the entry name '%s'"), *EntryName));
+		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to find zip entry index under the entry name '%s'"), *EntryName));
 		return false;
 	}
 
@@ -213,7 +219,7 @@ bool URuntimeArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 
 	if (!bResult)
 	{
-		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to get entry information by index %d"), EntryIndex));
+		ReportError(ERuntimeArchiverErrorCode::GetError, FString::Printf(TEXT("Unable to get zip entry information by index %d"), EntryIndex));
 		return false;
 	}
 
@@ -228,6 +234,8 @@ bool URuntimeArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 		EntryInfo.Name = UTF8_TO_TCHAR(ArchiveFileStat.m_filename);
 		EntryInfo.bIsDirectory = static_cast<bool>(mz_zip_reader_is_file_a_directory(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryIndex)));
 	}
+
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved zip entry '%s'"), *EntryInfo.Name);
 
 	return true;
 }
@@ -249,11 +257,11 @@ bool URuntimeArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<u
 
 	if (!bResult)
 	{
-		ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add entry '%s' from memory"), *EntryName));
+		ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add zip entry '%s' from memory"), *EntryName));
 		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added entry '%s' from memory with size '%lld'"), *EntryName, static_cast<int64>(DataToBeArchived.Num()));
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added zip entry '%s' from memory with size '%lld'"), *EntryName, static_cast<int64>(DataToBeArchived.Num()));
 
 	return true;
 }
@@ -275,7 +283,7 @@ bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 
 	if (EntryInfo.Index > (NumOfArchiveEntries - 1) || EntryInfo.Index < 0)
 	{
-		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
+		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Zip entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
 		return false;
 	}
 
@@ -285,7 +293,7 @@ bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 
 	if (EntryInMemoryPtr == nullptr)
 	{
-		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract entry '%s' into memory"), *EntryInfo.Name));
+		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract zip entry '%s' into memory"), *EntryInfo.Name));
 		return false;
 	}
 
@@ -293,7 +301,7 @@ bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 
 	FMemory::Free(EntryInMemoryPtr);
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted entry '%s' into memory"), *EntryInfo.Name);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted zip entry '%s' into memory"), *EntryInfo.Name);
 
 	return true;
 }
@@ -310,7 +318,7 @@ bool URuntimeArchiverZip::Initialize()
 
 	if (MinizArchiver == nullptr)
 	{
-		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for Miniz archiver"));
+		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for zip archiver"));
 		return false;
 	}
 
