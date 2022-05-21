@@ -253,7 +253,7 @@ bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePa
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added entry '%s' from '%s'"), *EntryName, *FilePath);
-	
+
 	return true;
 }
 
@@ -265,7 +265,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationR
 		OnResult.ExecuteIfBound(false);
 		return;
 	}
-	
+
 	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
 	{
 		auto ExecuteResult = [this, OnResult](bool bResult)
@@ -512,7 +512,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperatio
 	}
 
 	FPaths::NormalizeDirectoryName(DirectoryPath);
-	
+
 	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, EntryInfo = MoveTemp(EntryInfo), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
 	{
 		auto ExecuteResult = [this, OnResult](bool bResult)
@@ -541,9 +541,39 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperatio
 		}
 
 		UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted '%d' entries"), EntryInfo.Num());
-		
+
 		ExecuteResult(true);
 	});
+}
+
+namespace
+{
+	/**
+	 * Check whether the entry name belongs to the base name. For example, the entry name "SubFolder/File.txt" belongs to the base name "SubFolder", but the entry name "SubFolderNew/File.txt" does not belong to the base name "SubFolder"
+	 */
+	bool CheckEntryNameBelongsToBaseName(const FString& BaseName, const FString& EntryName)
+	{
+		int32 BaseNameIndex, EntryNameIndex;
+		
+		for (BaseNameIndex = EntryNameIndex = 0; BaseNameIndex < BaseName.Len() && EntryNameIndex < EntryName.Len(); ++BaseNameIndex, ++EntryNameIndex)
+		{
+			const TCHAR& BaseNameCharacter{BaseName[BaseNameIndex]};
+			const TCHAR& EntryNameCharacter{EntryName[EntryNameIndex]};
+
+			if (BaseNameCharacter != EntryNameCharacter)
+			{
+				return false;
+			}
+
+			if (BaseNameIndex == BaseName.Len() - 1 &&
+				EntryNameIndex + 1 < EntryName.Len() && EntryName[EntryNameIndex + 1] == TEXT('/'))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }
 
 void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
@@ -580,7 +610,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsy
 	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, NumOfEntries, EntryName, DirectoryPath, BaseDirectoryPathToExclude, bForceOverwrite]()
 	{
 		bool bResult{true};
-		
+
 		for (int32 EntryIndex = 0; EntryIndex < NumOfEntries; ++EntryIndex)
 		{
 			FRuntimeArchiveEntry ArchiveEntry;
@@ -592,7 +622,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsy
 				break;
 			}
 
-			if (EntryName.IsEmpty() || ArchiveEntry.Name.StartsWith(EntryName))
+			if (EntryName.IsEmpty() || CheckEntryNameBelongsToBaseName(EntryName, ArchiveEntry.Name))
 			{
 				// Get the file path by truncating the base directory from the found entry
 				const FString SpecificFilePath{FPaths::Combine(DirectoryPath, ArchiveEntry.Name.RightChop(BaseDirectoryPathToExclude.Len()))};
