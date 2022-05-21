@@ -566,9 +566,12 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsy
 	{
 		FString BasePath{FPaths::GetPath(EntryName)};
 
-		if (!bAddParentDirectory)
+		if (!BasePath.IsEmpty())
 		{
-			BasePath += TEXT("/") + FPaths::GetCleanFilename(EntryName) + TEXT("/");
+			if (!bAddParentDirectory)
+			{
+				BasePath += TEXT("/") + FPaths::GetCleanFilename(EntryName);
+			}
 		}
 
 		return MoveTemp(BasePath);
@@ -577,7 +580,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsy
 	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, NumOfEntries, EntryName, DirectoryPath, BaseDirectoryPathToExclude, bForceOverwrite]()
 	{
 		bool bResult{true};
-
+		
 		for (int32 EntryIndex = 0; EntryIndex < NumOfEntries; ++EntryIndex)
 		{
 			FRuntimeArchiveEntry ArchiveEntry;

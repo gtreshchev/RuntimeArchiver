@@ -182,7 +182,7 @@ int32 URuntimeArchiverZip::GetArchiveEntries()
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d zip entries"), NumOfEntries);
 
-	return true;
+	return NumOfEntries;
 }
 
 bool URuntimeArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)

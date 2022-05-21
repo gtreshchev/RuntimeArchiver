@@ -24,7 +24,7 @@ public:
 	URuntimeArchiverBase();
 	
 	/**
-	 * Create an archiver to archive/dearchive files and directories
+	 * Create an archiver to archive/unarchive files and directories
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver", meta = (WorldContext="WorldContextObject", DeterminesOutputType = "ArchiverClass"))
 	static URuntimeArchiverBase* CreateRuntimeArchiver(UObject* WorldContextObject, TSubclassOf<URuntimeArchiverBase> ArchiverClass);
