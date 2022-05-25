@@ -15,10 +15,9 @@ class RUNTIMEARCHIVER_API URuntimeArchiverZip : public URuntimeArchiverBase
 	GENERATED_BODY()
 
 public:
-
 	/** Default constructor */
 	URuntimeArchiverZip();
-	
+
 	//~ Begin URuntimeArchiverBase Interface
 	virtual bool CreateArchiveInStorage(FString ArchivePath) override;
 	virtual bool CreateArchiveInMemory(int32 InitialAllocationSize = 0) override;
@@ -34,9 +33,9 @@ public:
 
 	virtual bool GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo) override;
 	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeArchiveEntry& EntryInfo) override;
-	
+
 	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel) override;
-	
+
 	virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData) override;
 
 	virtual bool Initialize() override;

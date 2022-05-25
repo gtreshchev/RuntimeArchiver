@@ -554,7 +554,7 @@ namespace
 	bool CheckEntryNameBelongsToBaseName(const FString& BaseName, const FString& EntryName)
 	{
 		int32 BaseNameIndex, EntryNameIndex;
-		
+
 		for (BaseNameIndex = EntryNameIndex = 0; BaseNameIndex < BaseName.Len() && EntryNameIndex < EntryName.Len(); ++BaseNameIndex, ++EntryNameIndex)
 		{
 			const TCHAR& BaseNameCharacter{BaseName[BaseNameIndex]};
@@ -571,7 +571,7 @@ namespace
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 }

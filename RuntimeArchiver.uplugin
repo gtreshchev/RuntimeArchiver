@@ -3,7 +3,7 @@
   "Version": 1,
   "VersionName": "1.0",
   "FriendlyName": "Runtime Archiver",
-  "Description": "Runtime Archiver plugin for Unreal Engine. Cross-platform archiving and unarchiving directories and files. Currently supports ZIP format",
+  "Description": "Runtime Archiver plugin for Unreal Engine. Cross-platform archiving and unarchiving directories and files. Currently supports Zip and Tar formats",
   "Category": "Other",
   "CreatedBy": "Georgy Treshchev",
   "CreatedByURL": "https://github.com/gtreshchev",

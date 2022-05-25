@@ -178,7 +178,7 @@ int32 URuntimeArchiverZip::GetArchiveEntries()
 		return false;
 	}
 
-	const int32 NumOfEntries{ static_cast<int32>(mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver)))};
+	const int32 NumOfEntries{static_cast<int32>(mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver)))};
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d zip entries"), NumOfEntries);
 
