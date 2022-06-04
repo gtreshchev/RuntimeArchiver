@@ -32,5 +32,5 @@ public:
 	 * @param CompressedData Out compressed data
 	 * @return Whether the compression was successful or not
 	 */
-	RUNTIMEARCHIVER_API static bool CompressData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData);
+	RUNTIMEARCHIVER_API static bool CompressRawData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData);
 };

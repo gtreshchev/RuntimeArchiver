@@ -2,6 +2,8 @@
 
 #include "RuntimeArchiverUtilities.h"
 
+#include "RuntimeArchiverDefines.h"
+
 TArray<FString> URuntimeArchiverUtilities::ParseDirectories(const FString& FilePath)
 {
 	TArray<FString> Directories;
@@ -34,12 +36,13 @@ TArray<FString> URuntimeArchiverUtilities::ParseDirectories(const FString& FileP
 	return MoveTemp(Directories);
 }
 
-bool URuntimeArchiverUtilities::CompressData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
+bool URuntimeArchiverUtilities::CompressRawData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
 {
 	int32 CompressedSize = FCompression::CompressMemoryBound(FormatName, UncompressedData.Num());
 
 	if (CompressedSize <= 0)
 	{
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to get compressed data size for '%s' format"), *FormatName.ToString());
 		return false;
 	}
 
@@ -49,6 +52,7 @@ bool URuntimeArchiverUtilities::CompressData(FName FormatName, const TArray64<ui
 	
 	if (!FCompression::CompressMemory(FormatName, TempCompressedData.GetData(), CompressedSize, UncompressedData.GetData(), UncompressedData.Num()))
 	{
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to compress data for '%s' format"), *FormatName.ToString());
 		return false;
 	}
 
