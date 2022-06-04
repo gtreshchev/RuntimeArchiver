@@ -23,4 +23,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Utilities")
 	static TArray<FString> ParseDirectories(const FString& FilePath);
+
+	/**
+	 * Compress data using a format supported by the engine (e.g. LZ4, GZip, etc.).
+	 *
+	 * @param FormatName Name of the format
+	 * @param UncompressedData Uncompressed data
+	 * @param CompressedData Out compressed data
+	 * @return Whether the compression was successful or not
+	 */
+	RUNTIMEARCHIVER_API static bool CompressData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData);
 };

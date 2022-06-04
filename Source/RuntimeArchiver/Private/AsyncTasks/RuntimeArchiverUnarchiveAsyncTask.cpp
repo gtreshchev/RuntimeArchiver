@@ -2,6 +2,8 @@
 
 #include "AsyncTasks/RuntimeArchiverUnarchiveAsyncTask.h"
 
+#include "RuntimeArchiverDefines.h"
+
 URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::UnarchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
 	URuntimeArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverUnarchiveAsyncTask>();
@@ -81,7 +83,7 @@ void URuntimeArchiverUnarchiveAsyncTask::StartFiles()
 			FRuntimeArchiveEntry Entry;
 			if (!Archiver->GetArchiveEntryInfoByName(EntryName, Entry))
 			{
-				Archiver->ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to find '%s' archive entry"), *EntryName));
+				UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to find '%s' archive entry"), *EntryName);
 				OnResult(false);
 				return;
 			}

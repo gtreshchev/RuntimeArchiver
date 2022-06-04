@@ -127,11 +127,11 @@ bool URuntimeArchiverBase::CloseArchive()
 	return true;
 }
 
-bool URuntimeArchiverBase::GetArchiveDataFromMemory(TArray<uint8>& ArchiveData)
+bool URuntimeArchiverBase::GetArchiveData(TArray<uint8>& ArchiveData)
 {
 	TArray64<uint8> ArchiveData64;
 
-	if (!GetArchiveDataFromMemory(ArchiveData64))
+	if (!GetArchiveData(ArchiveData64))
 	{
 		return false;
 	}
@@ -147,19 +147,11 @@ bool URuntimeArchiverBase::GetArchiveDataFromMemory(TArray<uint8>& ArchiveData)
 	return true;
 }
 
-bool URuntimeArchiverBase::GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData)
+bool URuntimeArchiverBase::GetArchiveData(TArray64<uint8>& ArchiveData)
 {
 	if (!IsInitialized())
 	{
 		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Archiver is not initialized"));
-		return false;
-	}
-
-	if (Mode != ERuntimeArchiverMode::Write || Location != ERuntimeArchiverLocation::Memory)
-	{
-		ReportError(ERuntimeArchiverErrorCode::UnsupportedMode, FString::Printf(TEXT("Only '%s' mode and '%s' location are supported to get archive data (using mode: '%s', using location: '%s')"),
-		                                                                        *UEnum::GetValueAsName(ERuntimeArchiverMode::Write).ToString(), *UEnum::GetValueAsName(ERuntimeArchiverLocation::Memory).ToString(),
-		                                                                        *UEnum::GetValueAsName(Mode).ToString(), *UEnum::GetValueAsName(Location).ToString()));
 		return false;
 	}
 

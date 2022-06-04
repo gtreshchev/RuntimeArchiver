@@ -147,10 +147,18 @@ bool URuntimeArchiverZip::CloseArchive()
 	return true;
 }
 
-bool URuntimeArchiverZip::GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData)
+bool URuntimeArchiverZip::GetArchiveData(TArray64<uint8>& ArchiveData)
 {
-	if (!Super::GetArchiveDataFromMemory(ArchiveData))
+	if (!Super::GetArchiveData(ArchiveData))
 	{
+		return false;
+	}
+
+	if (Mode != ERuntimeArchiverMode::Write || Location != ERuntimeArchiverLocation::Memory)
+	{
+		ReportError(ERuntimeArchiverErrorCode::UnsupportedMode, FString::Printf(TEXT("Only '%s' mode and '%s' location are supported to get zip archive data (using mode: '%s', using location: '%s')"),
+																				*UEnum::GetValueAsName(ERuntimeArchiverMode::Write).ToString(), *UEnum::GetValueAsName(ERuntimeArchiverLocation::Memory).ToString(),
+																				*UEnum::GetValueAsName(Mode).ToString(), *UEnum::GetValueAsName(Location).ToString()));
 		return false;
 	}
 

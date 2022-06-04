@@ -33,3 +33,27 @@ TArray<FString> URuntimeArchiverUtilities::ParseDirectories(const FString& FileP
 
 	return MoveTemp(Directories);
 }
+
+bool URuntimeArchiverUtilities::CompressData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
+{
+	int32 CompressedSize = FCompression::CompressMemoryBound(FormatName, UncompressedData.Num());
+
+	if (CompressedSize <= 0)
+	{
+		return false;
+	}
+
+	TArray64<uint8> TempCompressedData;
+
+	TempCompressedData.SetNumUninitialized(CompressedSize);
+	
+	if (!FCompression::CompressMemory(FormatName, TempCompressedData.GetData(), CompressedSize, UncompressedData.GetData(), UncompressedData.Num()))
+	{
+		return false;
+	}
+
+	CompressedData = MoveTemp(TempCompressedData);
+	CompressedData.SetNum(CompressedSize, false);
+
+	return true;
+}

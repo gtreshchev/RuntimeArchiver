@@ -30,7 +30,7 @@ public:
 
 	virtual bool CloseArchive() override;
 
-	virtual bool GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData) override;
+	virtual bool GetArchiveData(TArray64<uint8>& ArchiveData) override;
 
 	virtual int32 GetArchiveEntries() override;
 

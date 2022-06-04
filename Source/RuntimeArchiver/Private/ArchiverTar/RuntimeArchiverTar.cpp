@@ -108,9 +108,9 @@ bool URuntimeArchiverTar::CloseArchive()
 	return true;
 }
 
-bool URuntimeArchiverTar::GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData)
+bool URuntimeArchiverTar::GetArchiveData(TArray64<uint8>& ArchiveData)
 {
-	if (!Super::GetArchiveDataFromMemory(ArchiveData))
+	if (!Super::GetArchiveData(ArchiveData))
 	{
 		return false;
 	}
@@ -549,7 +549,7 @@ bool FRuntimeArchiverTarEncapsulator::GetArchiveData(TArray64<uint8>& ArchiveDat
 		return false;
 	}
 
-	if (!Finalize())
+	if (Stream->IsWrite() && !Finalize())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to get tar archive data because finalization failed"));
 		return false;
@@ -640,7 +640,7 @@ bool FRuntimeArchiverTarEncapsulator::ReadData(TArray64<uint8>& Data)
 			UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to read header for getting tar entry data"));
 			return false;
 		}
-		
+
 		if (!Stream->Seek(Stream->Tell() + sizeof(FTarHeader)))
 		{
 			UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to seek to next header for getting tar entry data"));

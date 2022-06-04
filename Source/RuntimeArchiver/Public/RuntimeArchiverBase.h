@@ -85,19 +85,17 @@ public:
 	 *
 	 * @param ArchiveData Binary archive data
 	 * @return Whether the operation was successful or not
-	 * @warning Call this only if you created the archive via CreateArchiveInMemory!
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Get")
-	bool GetArchiveDataFromMemory(TArray<uint8>& ArchiveData);
+	bool GetArchiveData(TArray<uint8>& ArchiveData);
 
 	/**
 	 * Get archive data created in memory. Prefer to use this function if possible
 	 *
 	 * @param ArchiveData Binary archive data
 	 * @return Whether the operation was successful or not
-	 * @warning Call this only if you created the archive via CreateArchiveInMemory!
 	 */
-	virtual bool GetArchiveDataFromMemory(TArray64<uint8>& ArchiveData);
+	RUNTIMEARCHIVER_API virtual bool GetArchiveData(TArray64<uint8>& ArchiveData);
 
 	/**
 	 * Get the number of the archive entries
@@ -190,7 +188,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
 	 */
-	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	RUNTIMEARCHIVER_API virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
 	 * Extract entry to storage. In other words, extract the file from the archive to storage
@@ -243,22 +241,24 @@ public:
 	 * @param UnarchivedData Unarchived entry data
 	 * @return Whether the operation was successful or not
 	 */
-	virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData);
+	RUNTIMEARCHIVER_API virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData);
 
 	/**
 	 * Initialize the archiver
 	 */
-	virtual bool Initialize();
+	RUNTIMEARCHIVER_API virtual bool Initialize();
 
 	/**
 	 * Check whether the archiver is initialized
 	 */
-	virtual bool IsInitialized() const;
+	RUNTIMEARCHIVER_API virtual bool IsInitialized() const;
 
 	/**
 	 * Reset the archiver. Here it is supposed to clear all the data
 	 */
-	virtual void Reset();
+	RUNTIMEARCHIVER_API virtual void Reset();
+
+protected:
 
 	/**
 	 * Report an error in the archiver
