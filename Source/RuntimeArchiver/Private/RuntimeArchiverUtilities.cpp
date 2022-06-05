@@ -38,6 +38,12 @@ TArray<FString> URuntimeArchiverUtilities::ParseDirectories(const FString& FileP
 
 bool URuntimeArchiverUtilities::CompressRawData(FName FormatName, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
 {
+	if (!FCompression::IsFormatValid(FormatName))
+	{
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("The specified format '%s' is not valid"), *FormatName.ToString());
+		return false;
+	}
+
 	int32 CompressedSize = FCompression::CompressMemoryBound(FormatName, UncompressedData.Num());
 
 	if (CompressedSize <= 0)
@@ -49,7 +55,7 @@ bool URuntimeArchiverUtilities::CompressRawData(FName FormatName, const TArray64
 	TArray64<uint8> TempCompressedData;
 
 	TempCompressedData.SetNumUninitialized(CompressedSize);
-	
+
 	if (!FCompression::CompressMemory(FormatName, TempCompressedData.GetData(), CompressedSize, UncompressedData.GetData(), UncompressedData.Num()))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to compress data for '%s' format"), *FormatName.ToString());

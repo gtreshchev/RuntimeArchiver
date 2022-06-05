@@ -95,7 +95,7 @@ public:
 	 * @param ArchiveData Binary archive data
 	 * @return Whether the operation was successful or not
 	 */
-	RUNTIMEARCHIVER_API virtual bool GetArchiveData(TArray64<uint8>& ArchiveData);
+	virtual bool GetArchiveData(TArray64<uint8>& ArchiveData);
 
 	/**
 	 * Get the number of the archive entries
@@ -188,7 +188,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
 	 */
-	RUNTIMEARCHIVER_API virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
 
 	/**
 	 * Extract entry to storage. In other words, extract the file from the archive to storage
@@ -241,22 +241,22 @@ public:
 	 * @param UnarchivedData Unarchived entry data
 	 * @return Whether the operation was successful or not
 	 */
-	RUNTIMEARCHIVER_API virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData);
+	virtual bool ExtractEntryToMemory(const FRuntimeArchiveEntry& EntryInfo, TArray64<uint8>& UnarchivedData);
 
 	/**
 	 * Initialize the archiver
 	 */
-	RUNTIMEARCHIVER_API virtual bool Initialize();
+	virtual bool Initialize();
 
 	/**
 	 * Check whether the archiver is initialized
 	 */
-	RUNTIMEARCHIVER_API virtual bool IsInitialized() const;
+	virtual bool IsInitialized() const;
 
 	/**
 	 * Reset the archiver. Here it is supposed to clear all the data
 	 */
-	RUNTIMEARCHIVER_API virtual void Reset();
+	virtual void Reset();
 
 protected:
 
