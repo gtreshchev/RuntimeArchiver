@@ -2,10 +2,11 @@
 
 #pragma once
 
+#include "Launch/Resources/Version.h"
 #include "RuntimeArchiverTypes.generated.h"
 
 /** Possible archiver errors */
-UENUM(Blueprintable, Category = "Runtime Archiver")
+UENUM(BlueprintType, Category = "Runtime Archiver")
 enum class ERuntimeArchiverErrorCode : uint8
 {
 	NotInitialized,
@@ -19,8 +20,8 @@ enum class ERuntimeArchiverErrorCode : uint8
 };
 
 /** Archive entry compression level. The higher the level, the more compression */
-UENUM(Blueprintable, Category = "Runtime Archiver")
-enum class EUnrealEntryCompressionLevel : uint8
+UENUM(BlueprintType, Category = "Runtime Archiver")
+enum class ERuntimeArchiverCompressionLevel : uint8
 {
 	Compression0 = 0 UMETA(DisplayName = "0", ToolTip = "No compression"),
 	Compression1 = 1 UMETA(DisplayName = "1", ToolTip = "Best speed compression"),
@@ -51,6 +52,18 @@ enum class ERuntimeArchiverLocation : uint8
 	Undefined,
 	Storage,
 	Memory
+};
+
+/** RAW archive format */
+UENUM(BlueprintType, Category = "Runtime Archiver")
+enum class ERuntimeArchiverRawFormat : uint8
+{
+#if ENGINE_MAJOR_VERSION >= 5
+	Oodle,
+#endif
+	ZLib,
+	GZip,
+	LZ4
 };
 
 /** Information about archive entry. Used to search for files/directories in an archive to extract data. Do not fill it in manually */
@@ -108,6 +121,9 @@ struct FRuntimeArchiveEntry
 
 /** Delegate broadcasting the result of asynchronous archive operations */
 DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverAsyncOperationResult, bool, bSuccess);
+
+/** Static delegate broadcasting the result of asynchronous archive actions */
+DECLARE_MULTICAST_DELEGATE(FRuntimeArchiverAsyncActionResultNative);
 
 /** Delegate broadcasting the result of asynchronous archive actions */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRuntimeArchiverAsyncActionResult);

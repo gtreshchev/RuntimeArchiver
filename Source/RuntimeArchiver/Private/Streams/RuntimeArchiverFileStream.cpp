@@ -70,7 +70,7 @@ int64 FRuntimeArchiverFileStream::Size()
 {
 	if (!IsValid())
 	{
-		return false;
+		return -1;
 	}
 
 	return FileHandle->Size();

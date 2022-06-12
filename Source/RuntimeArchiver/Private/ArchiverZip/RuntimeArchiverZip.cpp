@@ -248,7 +248,7 @@ bool URuntimeArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 	return true;
 }
 
-bool URuntimeArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverZip::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!Super::AddEntryFromMemory(EntryName, DataToBeArchived, CompressionLevel))
 	{

@@ -101,9 +101,26 @@ void URuntimeArchiverUnarchiveAsyncTask::OnResult(bool bSuccess)
 
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
-		OnFail.Broadcast();
+		if (OnFailNative.IsBound())
+		{
+			OnFailNative.Broadcast();
+		}
+		
+		if (OnFail.IsBound())
+		{
+			OnFail.Broadcast();
+		}
+		
 		return;
 	}
 
-	OnSuccess.Broadcast();
+	if (OnSuccessNative.IsBound())
+	{
+		OnSuccessNative.Broadcast();
+	}
+
+	if (OnSuccess.IsBound())
+	{
+		OnSuccess.Broadcast();
+	}
 }

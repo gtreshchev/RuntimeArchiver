@@ -213,7 +213,7 @@ bool URuntimeArchiverTar::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 	return true;
 }
 
-bool URuntimeArchiverTar::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverTar::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!Super::AddEntryFromMemory(EntryName, DataToBeArchived, CompressionLevel))
 	{
@@ -435,7 +435,7 @@ bool FRuntimeArchiverTarEncapsulator::OpenMemory(const TArray64<uint8>& ArchiveD
 		return false;
 	}
 
-	Stream = bWrite ? new FRuntimeArchiverMemoryStream(ArchiveData) : new FRuntimeArchiverMemoryStream(InitialAllocationSize);
+	Stream = bWrite ? new FRuntimeArchiverMemoryStream(InitialAllocationSize) : new FRuntimeArchiverMemoryStream(ArchiveData);
 
 	if (!IsValid())
 	{
@@ -557,9 +557,23 @@ bool FRuntimeArchiverTarEncapsulator::GetArchiveData(TArray64<uint8>& ArchiveDat
 
 	ArchiveData.SetNumUninitialized(Stream->Size());
 
+	const int64 PrevRemainingDataSize = RemainingDataSize;
+	const int64 PrevLastHeaderPosition = LastHeaderPosition;
+	const int64 PrevStreamPosition = Stream->Tell();
+
+	Rewind();
+
 	if (!Stream->Read(ArchiveData.GetData(), ArchiveData.Num()))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to read tar archive data with size '%lld'"), ArchiveData.Num());
+		return false;
+	}
+
+	RemainingDataSize = PrevRemainingDataSize;
+	LastHeaderPosition = PrevLastHeaderPosition;
+
+	if (!Stream->Seek(PrevStreamPosition))
+	{
 		return false;
 	}
 

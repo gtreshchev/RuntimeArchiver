@@ -24,7 +24,7 @@ bool FRuntimeArchiverMemoryStream::Read(void* Data, int64 Size)
 		return false;
 	}
 
-	if (Position + Size >= ArchiveData.Num())
+	if (Position + Size > ArchiveData.Num())
 	{
 		return false;
 	}
@@ -46,9 +46,9 @@ bool FRuntimeArchiverMemoryStream::Write(const void* Data, int64 Size)
 
 	const int64 NewPosition = Position + Size;
 
-	if (NewPosition >= ArchiveData.Num())
+	if (NewPosition > ArchiveData.Num())
 	{
-		ArchiveData.SetNum(NewPosition);
+		ArchiveData.SetNumUninitialized(NewPosition);
 	}
 
 	const bool bSuccess{FMemory::Memcpy(ArchiveData.GetData() + Position, Data, Size) != nullptr};
@@ -64,9 +64,17 @@ bool FRuntimeArchiverMemoryStream::Seek(int64 NewPosition)
 		return false;
 	}
 
-	if (NewPosition >= ArchiveData.Num())
+	if (NewPosition == Position)
 	{
-		return false;
+		return true;
+	}
+
+	if (NewPosition > ArchiveData.Num())
+	{
+		if (NewPosition != 0)
+		{
+			return false;
+		}
 	}
 
 	Position = NewPosition;
@@ -78,7 +86,7 @@ int64 FRuntimeArchiverMemoryStream::Size()
 {
 	if (!IsValid())
 	{
-		return false;
+		return -1;
 	}
 
 	return ArchiveData.Num();

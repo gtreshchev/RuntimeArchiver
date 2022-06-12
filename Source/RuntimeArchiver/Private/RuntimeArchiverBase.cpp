@@ -203,7 +203,7 @@ bool URuntimeArchiverBase::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntime
 	return true;
 }
 
-bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePath, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -249,7 +249,7 @@ bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePa
 	return true;
 }
 
-void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel)
+void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -288,7 +288,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationR
 	});
 }
 
-void URuntimeArchiverBase::AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
+void URuntimeArchiverBase::AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -342,15 +342,15 @@ void URuntimeArchiverBase::AddEntriesFromStorage_Directory(FRuntimeArchiverAsync
 	});
 }
 
-bool URuntimeArchiverBase::AddEntriesFromStorage_Directory_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverBase::AddEntriesFromStorage_Directory_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	class FDirectoryVisitor_EntryAppender : public IPlatformFile::FDirectoryVisitor
 	{
 		URuntimeArchiverBase* RuntimeArchiver;
 		const FString& BaseDirectoryPathToExclude;
-		EUnrealEntryCompressionLevel CompressionLevel;
+		ERuntimeArchiverCompressionLevel CompressionLevel;
 	public:
-		FDirectoryVisitor_EntryAppender(URuntimeArchiverBase* RuntimeArchiver, const FString& BaseDirectoryPathToExclude, EUnrealEntryCompressionLevel CompressionLevel)
+		FDirectoryVisitor_EntryAppender(URuntimeArchiverBase* RuntimeArchiver, const FString& BaseDirectoryPathToExclude, ERuntimeArchiverCompressionLevel CompressionLevel)
 			: RuntimeArchiver(RuntimeArchiver)
 		  , BaseDirectoryPathToExclude(BaseDirectoryPathToExclude)
 		  , CompressionLevel(CompressionLevel)
@@ -383,12 +383,12 @@ bool URuntimeArchiverBase::AddEntriesFromStorage_Directory_Internal(FString Base
 	return FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(*DirectoryPath, DirectoryVisitor_EntryAppender);
 }
 
-bool URuntimeArchiverBase::AddEntryFromMemory(FString EntryName, TArray<uint8> DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverBase::AddEntryFromMemory(FString EntryName, TArray<uint8> DataToBeArchived, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	return AddEntryFromMemory(MoveTemp(EntryName), TArray64<uint8>(MoveTemp(DataToBeArchived)), CompressionLevel);
 }
 
-bool URuntimeArchiverBase::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel)
+bool URuntimeArchiverBase::AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{

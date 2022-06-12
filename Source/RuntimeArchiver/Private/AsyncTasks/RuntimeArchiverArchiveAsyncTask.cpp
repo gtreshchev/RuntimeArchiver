@@ -2,7 +2,7 @@
 
 #include "AsyncTasks/RuntimeArchiverArchiveAsyncTask.h"
 
-URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel)
+URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	URuntimeArchiverArchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverArchiveAsyncTask>();
 
@@ -16,7 +16,7 @@ URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveDirec
 	return ArchiveTask;
 }
 
-URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveFiles(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel)
+URuntimeArchiverArchiveAsyncTask* URuntimeArchiverArchiveAsyncTask::ArchiveFiles(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	URuntimeArchiverArchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverArchiveAsyncTask>();
 
@@ -81,9 +81,26 @@ void URuntimeArchiverArchiveAsyncTask::OnResult(bool bSuccess)
 
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
-		OnFail.Broadcast();
+		if (OnFailNative.IsBound())
+		{
+			OnFailNative.Broadcast();
+		}
+		
+		if (OnFail.IsBound())
+		{
+			OnFail.Broadcast();
+		}
+		
 		return;
 	}
 
-	OnSuccess.Broadcast();
+	if (OnSuccessNative.IsBound())
+	{
+		OnSuccessNative.Broadcast();
+	}
+
+	if (OnSuccess.IsBound())
+	{
+		OnSuccess.Broadcast();
+	}
 }

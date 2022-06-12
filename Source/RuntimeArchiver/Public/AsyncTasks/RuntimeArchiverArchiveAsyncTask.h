@@ -26,7 +26,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
-	static URuntimeArchiverArchiveAsyncTask* ArchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	static URuntimeArchiverArchiveAsyncTask* ArchiveDirectory(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 	/**
 	 * Asynchronously archive entries from file paths
@@ -37,14 +37,20 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
-	static URuntimeArchiverArchiveAsyncTask* ArchiveFiles(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	static URuntimeArchiverArchiveAsyncTask* ArchiveFiles(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
+	/** Archiving completed successfully. Use this delegate in C++ for convenience */
+	FRuntimeArchiverAsyncActionResultNative OnSuccessNative;
+
+	/** Unarchiving completed successfully. Use this delegate in C++ for convenience */
+	FRuntimeArchiverAsyncActionResultNative OnFailNative;
+	
 	/** Archiving completed successfully */
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Category = "Runtime Archiver|Async")
 	FRuntimeArchiverAsyncActionResult OnSuccess;
 
 	/** Unarchiving completed successfully */
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Category = "Runtime Archiver|Async")
 	FRuntimeArchiverAsyncActionResult OnFail;
 
 protected:
@@ -59,7 +65,7 @@ private:
 		FString ArchivePath;
 		FString DirectoryPath;
 		bool bAddParentDirectory;
-		EUnrealEntryCompressionLevel CompressionLevel;
+		ERuntimeArchiverCompressionLevel CompressionLevel;
 	} DirectoryInfo;
 
 	/** Information about the operation to archive files */
@@ -67,7 +73,7 @@ private:
 	{
 		FString ArchivePath;
 		TArray<FString> FilePaths;
-		EUnrealEntryCompressionLevel CompressionLevel;
+		ERuntimeArchiverCompressionLevel CompressionLevel;
 	} FilesInfo;
 
 	/** Specific archiving operation */

@@ -134,7 +134,7 @@ public:
 	 * @return Whether the operation was successful or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	bool AddEntryFromStorage(FString EntryName, FString FilePath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	bool AddEntryFromStorage(FString EntryName, FString FilePath, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 	/**
 	 * Add entries from storage. In other words, import files into the archive
@@ -144,7 +144,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	void AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	void AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 	/**
 	 * Add entries from storage. Must be used for directories only
@@ -155,7 +155,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	void AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	void AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 private:
 	/**
@@ -166,7 +166,7 @@ private:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
 	 */
-	bool AddEntriesFromStorage_Directory_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	bool AddEntriesFromStorage_Directory_Internal(FString BaseDirectoryPathToExclude, FString DirectoryPath, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 public:
 	/**
@@ -178,7 +178,7 @@ public:
 	 * @return Whether the operation was successful or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	bool AddEntryFromMemory(FString EntryName, TArray<uint8> DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	bool AddEntryFromMemory(FString EntryName, TArray<uint8> DataToBeArchived, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 	/**
 	 * Add entry from memory. In other words, import the data in-memory into the archive. Prefer to use this function if possible
@@ -188,7 +188,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 * @return Whether the operation was successful or not
 	 */
-	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, EUnrealEntryCompressionLevel CompressionLevel = EUnrealEntryCompressionLevel::Compression6);
+	virtual bool AddEntryFromMemory(FString EntryName, const TArray64<uint8>& DataToBeArchived, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 	/**
 	 * Extract entry to storage. In other words, extract the file from the archive to storage
