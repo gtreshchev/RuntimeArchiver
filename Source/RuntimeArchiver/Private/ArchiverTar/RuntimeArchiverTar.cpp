@@ -466,6 +466,8 @@ bool FRuntimeArchiverTarEncapsulator::FindIf(TFunctionRef<bool(const FTarHeader&
 	FTarHeader TempHeader;
 	int32 TempIndex{0};
 
+	bool bFound{false};
+
 	// Iterate all files until we hit an error or find the header
 	while (ReadHeader(TempHeader))
 	{
@@ -473,8 +475,9 @@ bool FRuntimeArchiverTarEncapsulator::FindIf(TFunctionRef<bool(const FTarHeader&
 		{
 			Header = TempHeader;
 			Index = TempIndex;
-			Stream->Seek(PreviousPosition);
-			return true;
+
+			bFound = true;
+			break;
 		}
 
 		if (!Next())
@@ -490,7 +493,7 @@ bool FRuntimeArchiverTarEncapsulator::FindIf(TFunctionRef<bool(const FTarHeader&
 		Stream->Seek(PreviousPosition);
 	}
 
-	return false;
+	return bFound;
 }
 
 int32 FRuntimeArchiverTarEncapsulator::GetArchiveEntries()
