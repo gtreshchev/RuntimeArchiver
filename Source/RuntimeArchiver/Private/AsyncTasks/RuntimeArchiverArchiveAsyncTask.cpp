@@ -53,7 +53,7 @@ void URuntimeArchiverArchiveAsyncTask::StartDirectory()
 {
 	if (!Archiver->CreateArchiveInStorage(DirectoryInfo.ArchivePath))
 	{
-		OnFail.Broadcast();
+		OnResult(false);
 		return;
 	}
 
@@ -66,7 +66,7 @@ void URuntimeArchiverArchiveAsyncTask::StartFiles()
 {
 	if (!Archiver->CreateArchiveInStorage(FilesInfo.ArchivePath))
 	{
-		OnFail.Broadcast();
+		OnResult(false);
 		return;
 	}
 
@@ -81,26 +81,9 @@ void URuntimeArchiverArchiveAsyncTask::OnResult(bool bSuccess)
 
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
-		if (OnFailNative.IsBound())
-		{
-			OnFailNative.Broadcast();
-		}
-		
-		if (OnFail.IsBound())
-		{
-			OnFail.Broadcast();
-		}
-		
+		OnFail.Broadcast();
 		return;
 	}
 
-	if (OnSuccessNative.IsBound())
-	{
-		OnSuccessNative.Broadcast();
-	}
-
-	if (OnSuccess.IsBound())
-	{
-		OnSuccess.Broadcast();
-	}
+	OnSuccess.Broadcast();
 }

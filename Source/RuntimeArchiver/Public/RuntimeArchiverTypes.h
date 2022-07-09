@@ -2,11 +2,10 @@
 
 #pragma once
 
-#include "Launch/Resources/Version.h"
 #include "RuntimeArchiverTypes.generated.h"
 
 /** Possible archiver errors */
-UENUM(BlueprintType, Category = "Runtime Archiver")
+UENUM(Blueprintable, Category = "Runtime Archiver")
 enum class ERuntimeArchiverErrorCode : uint8
 {
 	NotInitialized,
@@ -20,7 +19,7 @@ enum class ERuntimeArchiverErrorCode : uint8
 };
 
 /** Archive entry compression level. The higher the level, the more compression */
-UENUM(BlueprintType, Category = "Runtime Archiver")
+UENUM(Blueprintable, Category = "Runtime Archiver")
 enum class ERuntimeArchiverCompressionLevel : uint8
 {
 	Compression0 = 0 UMETA(DisplayName = "0", ToolTip = "No compression"),
@@ -55,13 +54,10 @@ enum class ERuntimeArchiverLocation : uint8
 };
 
 /** RAW archive format */
-UENUM(BlueprintType, Category = "Runtime Archiver")
+UENUM()
 enum class ERuntimeArchiverRawFormat : uint8
 {
-#if ENGINE_MAJOR_VERSION >= 5
 	Oodle,
-#endif
-	ZLib,
 	GZip,
 	LZ4
 };
@@ -121,9 +117,6 @@ struct FRuntimeArchiveEntry
 
 /** Delegate broadcasting the result of asynchronous archive operations */
 DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverAsyncOperationResult, bool, bSuccess);
-
-/** Static delegate broadcasting the result of asynchronous archive actions */
-DECLARE_MULTICAST_DELEGATE(FRuntimeArchiverAsyncActionResultNative);
 
 /** Delegate broadcasting the result of asynchronous archive actions */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRuntimeArchiverAsyncActionResult);

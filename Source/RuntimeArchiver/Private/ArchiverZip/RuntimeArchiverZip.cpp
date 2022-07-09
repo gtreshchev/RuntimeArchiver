@@ -174,7 +174,7 @@ bool URuntimeArchiverZip::GetArchiveData(TArray64<uint8>& ArchiveData)
 
 	ArchiveData = TArray64<uint8>(static_cast<uint8*>(MinizArchiverReal->m_pState->m_pMem), ArchiveSize);
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved zip archive data from memory with size '%lld'"), ArchiveSize);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved zip archive data from memory with size %lld bytes"), ArchiveSize);
 
 	return true;
 }

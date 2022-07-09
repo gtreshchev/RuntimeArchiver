@@ -4,7 +4,7 @@
 /**
  * Memory tar stream. Manages data at the memory level
  */
-class FRuntimeArchiverMemoryStream : public FRuntimeArchiverBaseStream
+class RUNTIMEARCHIVER_API FRuntimeArchiverMemoryStream : public FRuntimeArchiverBaseStream
 {
 public:
 	/** It should be impossible to create this object by the default constructor */

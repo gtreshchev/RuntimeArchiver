@@ -4,7 +4,7 @@
 /**
  * File tar stream. Manages data at the file system level
  */
-class FRuntimeArchiverFileStream : public FRuntimeArchiverBaseStream
+class RUNTIMEARCHIVER_API FRuntimeArchiverFileStream : public FRuntimeArchiverBaseStream
 {
 public:
 	/** It should be impossible to create this object by the default constructor */

@@ -176,7 +176,7 @@ bool URuntimeArchiverTar::GetArchiveEntryInfoByName(FString EntryName, FRuntimeA
 		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved tar entry '%s'"), *EntryInfo.Name);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved tar entry '%s' by name"), *EntryInfo.Name);
 
 	return true;
 }
@@ -208,7 +208,7 @@ bool URuntimeArchiverTar::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved tar entry '%s'"), *EntryInfo.Name);
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved tar entry '%s' by index"), *EntryInfo.Name);
 
 	return true;
 }
@@ -276,6 +276,8 @@ bool URuntimeArchiverTar::AddEntryFromMemory(FString EntryName, const TArray64<u
 		}
 	}
 
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added tar entry '%s' with size %lld bytes from memory"), *EntryName, DataToBeArchived.Num());
+
 	return true;
 }
 
@@ -317,6 +319,8 @@ bool URuntimeArchiverTar::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 		UnarchivedData.Empty();
 		return false;
 	}
+
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted tar entry '%s' into memory"), *EntryInfo.Name);
 
 	return true;
 }
@@ -503,6 +507,8 @@ int32 FRuntimeArchiverTarEncapsulator::GetArchiveEntries()
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to get tar archive entries because stream is invalid"));
 		return false;
 	}
+
+	// TODO: check the last entry if it is valid
 
 	// Read-only mode is supposed to have a fixed (immutable) number of entries, so if possible, return the cached number of entries in this mode to improve performance
 	if (!Stream->IsWrite() && CachedNumOfHeaders > 0)

@@ -24,41 +24,4 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Utilities")
 	static TArray<FString> ParseDirectories(const FString& FilePath);
-
-	/**
-	 * Compress raw data using a format supported by the engine (e.g. LZ4, GZip, etc.).
-	 *
-	 * @param RawFormat Raw format
-	 * @param CompressionLevel Compression level. The higher the level, the more compression
-	 * @param UncompressedData Uncompressed data
-	 * @param CompressedData Out compressed data
-	 * @return Whether the compression was successful or not
-	 */
-	static bool CompressRawData(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData);
-	
-	/**
-	 * Uncompress raw data using a format supported by the engine (e.g. LZ4, GZip, etc.).
-	 *
-	 * @param RawFormat Raw format
-	 * @param UncompressedData Uncompressed data
-	 * @param CompressedData Out compressed data
-	 * @return Whether the compression was successful or not
-	 */
-	static bool UncompressRawData(ERuntimeArchiverRawFormat RawFormat, const TArray64<uint8>& CompressedData, TArray64<uint8>& UncompressedData);
-
-	/**
-	 * Guess the size of the compressed raw data given the format. Returns the maximum possible size
-	 *
-	 * @param RawFormat Raw format
-	 * @param UncompressedData Uncompressed data
-	 */
-	static int64 GuessCompressedSize(ERuntimeArchiverRawFormat RawFormat, const TArray64<uint8>& UncompressedData);
-
-	/**
-	 * Guess the size of the uncompressed raw data given the format. Returns the maximum possible size
-	 *
-	 * @param RawFormat Raw format
-	 * @param CompressedData Compressed data
-	 */
-	static int64 GuessUncompressedSize(ERuntimeArchiverRawFormat RawFormat, const TArray64<uint8>& CompressedData);
 };

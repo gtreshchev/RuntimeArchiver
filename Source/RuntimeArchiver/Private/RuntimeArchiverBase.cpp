@@ -240,7 +240,7 @@ bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePa
 
 	if (!AddEntryFromMemory(EntryName, FileData, CompressionLevel))
 	{
-		ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Unable to add entry '%s' from file '%s'"), *EntryName, *FilePath));
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to add entry '%s' from file '%s'"), *EntryName, *FilePath);
 		return false;
 	}
 
@@ -707,7 +707,7 @@ void URuntimeArchiverBase::ReportError(ERuntimeArchiverErrorCode ErrorCode, cons
 		return;
 	}
 
-	URuntimeArchiverSubsystem* ArchiveSubsystem = URuntimeArchiverSubsystem::GetArchiveSubsystem();
+	const URuntimeArchiverSubsystem* ArchiveSubsystem{URuntimeArchiverSubsystem::GetArchiveSubsystem()};
 
 	if (ArchiveSubsystem != nullptr)
 	{

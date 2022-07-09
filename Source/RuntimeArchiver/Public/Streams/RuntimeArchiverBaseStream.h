@@ -18,7 +18,7 @@ protected:
 	}
 
 public:
-	/** It should be impossible to create this class from outside */
+	/** It should be impossible to create this class directly */
 	FRuntimeArchiverBaseStream() = delete;
 
 	/** Virtual destructor to properly destroy child classes */
@@ -29,21 +29,29 @@ public:
 	 * 
 	 * @return Whether the stream is valid or not
 	 */
-	virtual bool IsValid() const;
+	virtual bool IsValid() const
+	{
+		ensureMsgf(false, TEXT("IsValid cannot be called from runtime archiver base stream"));
+		return false;
+	}
 
-	bool IsWrite() const;
+	bool IsWrite() const { return bWrite; }
 
 	/**
 	 * Get the current write or read position
 	 */
-	int64 Tell() const;
+	int64 Tell() const { return Position; }
 
 	/**
 	 * Seek archived data at a specified position. In other words, change the current write or read position
 	 *
-	 * @param Position Position for seeking the archived data
+	 * @param NewPosition Position for seeking the archived data
 	 */
-	virtual bool Seek(int64 Position);
+	virtual bool Seek(int64 NewPosition)
+	{
+		ensureMsgf(false, TEXT("Seek cannot be called from runtime archiver base stream"));
+		return false;
+	}
 
 	/**
 	 * Read archived data from the current position
@@ -52,7 +60,11 @@ public:
 	 * @param Size Data size
 	 * @return Whether the operation was successful or not
 	 */
-	virtual bool Read(void* Data, int64 Size);
+	virtual bool Read(void* Data, int64 Size)
+	{
+		ensureMsgf(false, TEXT("Read cannot be called from runtime archiver base stream"));
+		return false;
+	}
 
 	/**
 	 * Write archived data from the current position
@@ -61,15 +73,22 @@ public:
 	 * @param Size Data size
 	 * @return Whether the operation was successful or not
 	 */
-	virtual bool Write(const void* Data, int64 Size);
+	virtual bool Write(const void* Data, int64 Size)
+	{
+		ensureMsgf(false, TEXT("Write cannot be called from runtime archiver base stream"));
+		return false;
+	}
 
 	/**
 	 * Get the total size
 	 */
-	virtual int64 Size();
+	virtual int64 Size()
+	{
+		ensureMsgf(false, TEXT("Size cannot be called from runtime archiver base stream"));
+		return 0;
+	}
 
 protected:
-
 	/** Current read or write position */
 	int64 Position;
 

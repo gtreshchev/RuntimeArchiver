@@ -102,13 +102,13 @@ public:
 	{
 		if (*Header.Checksum == '\0')
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header '%hc' is NULL"), *Header.GetName());
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header is NULL"), *Header.GetName());
 			return false;
 		}
 
 		if (BuildChecksum(Header) != Header.GetChecksum())
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header '%hc' is invalid"), *Header.GetName())
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header is invalid"), *Header.GetName())
 			return false;
 		}
 

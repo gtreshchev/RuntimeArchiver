@@ -25,8 +25,7 @@
 - Fast speed
 - Easy archiving and unarchiving of files
 - Recursive archiving and unarchiving of directories
-- Zip format support for reading, writing and appending archives (TDEF compression and TINFL decompression)
-- Tar format support for reading and writing
+- Support for reading and writing archives of many formats: Zip, Oodle, Tar, LZ4 and GZip
 - No any static libraries and external dependencies
 - Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
 

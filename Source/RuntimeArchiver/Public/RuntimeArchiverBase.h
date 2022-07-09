@@ -11,7 +11,7 @@
 /**
  * The base class for the archiver. Do not create it manually!
  */
-UCLASS(Abstract, HideDropdown)
+UCLASS(Abstract, HideDropdown, BlueprintType, Category = "Runtime Archiver")
 class RUNTIMEARCHIVER_API URuntimeArchiverBase : public UObject
 {
 	GENERATED_BODY()

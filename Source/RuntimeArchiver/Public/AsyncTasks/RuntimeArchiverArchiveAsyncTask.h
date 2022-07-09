@@ -39,18 +39,12 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "Runtime Archiver|Async")
 	static URuntimeArchiverArchiveAsyncTask* ArchiveFiles(TSubclassOf<URuntimeArchiverBase> ArchiverClass, FString ArchivePath, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
-	/** Archiving completed successfully. Use this delegate in C++ for convenience */
-	FRuntimeArchiverAsyncActionResultNative OnSuccessNative;
-
-	/** Unarchiving completed successfully. Use this delegate in C++ for convenience */
-	FRuntimeArchiverAsyncActionResultNative OnFailNative;
-	
 	/** Archiving completed successfully */
-	UPROPERTY(BlueprintAssignable, Category = "Runtime Archiver|Async")
+	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnSuccess;
 
 	/** Unarchiving completed successfully */
-	UPROPERTY(BlueprintAssignable, Category = "Runtime Archiver|Async")
+	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnFail;
 
 protected:
