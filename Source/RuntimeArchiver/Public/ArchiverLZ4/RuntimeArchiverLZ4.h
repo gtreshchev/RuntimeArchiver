@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeArchiverBase.h"
 #include "ArchiverTar/RuntimeArchiverTar.h"
+#include "UObject/StrongObjectPtr.h"
 #include "RuntimeArchiverLZ4.generated.h"
 
 /**

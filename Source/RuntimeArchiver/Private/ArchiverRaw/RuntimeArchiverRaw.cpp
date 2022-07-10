@@ -2,6 +2,7 @@
 
 #include "ArchiverRaw/RuntimeArchiverRaw.h"
 #include "RuntimeArchiverDefines.h"
+#include "Async/Async.h"
 #if ENGINE_MAJOR_VERSION >= 5
 #include "Compression/OodleDataCompressionUtil.h"
 #endif
@@ -149,7 +150,7 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 		TArray64<uint8> CompressedData;
 		CompressRawData(RawFormat, CompressionLevel, MoveTemp(UncompressedData), CompressedData);
 
-		AsyncTask(ENamedThreads::GameThread, [this, &OnResult, CompressedData = MoveTemp(CompressedData)]() mutable
+		AsyncTask(ENamedThreads::GameThread, [&OnResult, CompressedData = MoveTemp(CompressedData)]() mutable
 		{
 			OnResult.ExecuteIfBound(MoveTemp(CompressedData));
 		});
@@ -229,7 +230,7 @@ void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFo
 		TArray64<uint8> UncompressedData;
 		UncompressRawData(RawFormat, MoveTemp(CompressedData), UncompressedData);
 
-		AsyncTask(ENamedThreads::GameThread, [this, &OnResult, UncompressedData = MoveTemp(UncompressedData)]() mutable
+		AsyncTask(ENamedThreads::GameThread, [&OnResult, UncompressedData = MoveTemp(UncompressedData)]() mutable
 		{
 			OnResult.ExecuteIfBound(MoveTemp(UncompressedData));
 		});
