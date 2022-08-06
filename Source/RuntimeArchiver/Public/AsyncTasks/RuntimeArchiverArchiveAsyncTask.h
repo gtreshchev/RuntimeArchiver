@@ -43,7 +43,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnSuccess;
 
-	/** Unarchiving completed successfully */
+	/** Archiving failed */
 	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnFail;
 

@@ -70,6 +70,13 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Open")
 	bool OpenArchiveFromMemory(TArray<uint8> ArchiveData);
+
+	/**
+	 * Open an archive from memory. Prefer to use this function if possible
+	 *
+	 * @param ArchiveData Binary archive data
+	 * @return Whether the operation was successful or not
+	 */
 	virtual bool OpenArchiveFromMemory(const TArray64<uint8>& ArchiveData);
 
 	/**
