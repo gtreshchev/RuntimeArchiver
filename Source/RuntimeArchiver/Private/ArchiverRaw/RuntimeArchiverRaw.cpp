@@ -12,7 +12,7 @@ namespace
 	/**
 	 * Converting a raw format enum to a name used in the Unreal Engine compressor
 	 */
-	constexpr EName ToName(ERuntimeArchiverRawFormat Format)
+	EName ToName(ERuntimeArchiverRawFormat Format)
 	{
 		switch (Format)
 		{
@@ -247,9 +247,9 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 		return false;
 	}
 
+#if ENGINE_MAJOR_VERSION >= 5
 	if (FormatName.IsEqual(NAME_Oodle))
 	{
-#if ENGINE_MAJOR_VERSION >= 5
 		if (!FOodleCompressedArray::DecompressToTArray64(UncompressedData, CompressedData))
 		{
 			UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to uncompress data for '%s' format"), *FormatName.ToString());
@@ -257,11 +257,8 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 		}
 
 		return true;
-#else
-		UE_LOG(LogRuntimeArchiver, Error, TEXT("Oodle format is not supported in %s %d"), TEXT(EPIC_PRODUCT_NAME), ENGINE_MAJOR_VERSION);
-		return false;
-#endif
 	}
+#endif
 
 	const int64 UncompressedSize{GuessUncompressedSize(RawFormat, CompressedData)};
 
