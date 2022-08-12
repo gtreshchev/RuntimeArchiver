@@ -12,21 +12,29 @@
 class FTarTypeFlagHelper
 {
 	/** File type flags */
-	static constexpr ANSICHAR FileTypeFlag = '0';
-	static constexpr ANSICHAR FileTypeFlag1 = '\0';
+	static constexpr inline ANSICHAR FileTypeFlag{'0'};
+	static constexpr inline ANSICHAR FileTypeFlag1{'\0'};
 
 	/** Directory type flag */
-	static constexpr ANSICHAR DirectoryTypeFlag = '5';
+	static constexpr inline ANSICHAR DirectoryTypeFlag{'5'};
 
 	/** Unsupported type flags */
-	static constexpr ANSICHAR HardLinkTypeFlag = '1';
-	static constexpr ANSICHAR SymbolicLinkTypeFlag = '2';
-	static constexpr ANSICHAR CharacterDeviceTypeFlag = '3';
-	static constexpr ANSICHAR BlockDeviceTypeFlag = '4';
-	static constexpr ANSICHAR FIFOTypeFlag = '6';
+	static constexpr inline ANSICHAR HardLinkTypeFlag{'1'};
+	static constexpr inline ANSICHAR SymbolicLinkTypeFlag{'2'};
+	static constexpr inline ANSICHAR CharacterDeviceTypeFlag{'3'};
+	static constexpr inline ANSICHAR BlockDeviceTypeFlag{'4'};
+	static constexpr inline ANSICHAR FIFOTypeFlag{'6'};
 
 	/** Array of string representation of type flags */
-	static const TMap<ANSICHAR, const TCHAR*> Strings;
+	static const inline TMap<ANSICHAR, const TCHAR*> Strings{
+		{FileTypeFlag, TEXT("File")}, {FileTypeFlag1, TEXT("File")},
+		{DirectoryTypeFlag, TEXT("Directory")},
+		{HardLinkTypeFlag, TEXT("Hard link")},
+		{SymbolicLinkTypeFlag, TEXT("Symbolic link")},
+		{CharacterDeviceTypeFlag, TEXT("Character device")},
+		{BlockDeviceTypeFlag, TEXT("Block device")},
+		{FIFOTypeFlag, TEXT("FIFO")}
+	};
 
 public:
 	/**
@@ -73,18 +81,6 @@ public:
 		return bIsDirectory ? DirectoryTypeFlag : FileTypeFlag;
 	}
 };
-
-const TMap<ANSICHAR, const TCHAR*> FTarTypeFlagHelper::Strings
-{
-	{FileTypeFlag, TEXT("File")}, {FileTypeFlag1, TEXT("File")},
-	{DirectoryTypeFlag, TEXT("Directory")},
-	{HardLinkTypeFlag, TEXT("Hard link")},
-	{SymbolicLinkTypeFlag, TEXT("Symbolic link")},
-	{CharacterDeviceTypeFlag, TEXT("Character device")},
-	{BlockDeviceTypeFlag, TEXT("Block device")},
-	{FIFOTypeFlag, TEXT("FIFO")}
-};
-
 
 /**
  * Helper that handles checksum

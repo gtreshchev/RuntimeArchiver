@@ -178,9 +178,6 @@ bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, E
 
 		return true;
 	}
-#else
-	UE_LOG(LogRuntimeArchiver, Error, TEXT("Oodle format is not supported in %s %d"), TEXT(EPIC_PRODUCT_NAME), ENGINE_MAJOR_VERSION);
-	return false;
 #endif
 
 	int32 CompressedSize = GuessCompressedSize(RawFormat, UncompressedData);
