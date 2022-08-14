@@ -12,29 +12,21 @@
 class FTarTypeFlagHelper
 {
 	/** File type flags */
-	static constexpr inline ANSICHAR FileTypeFlag{'0'};
-	static constexpr inline ANSICHAR FileTypeFlag1{'\0'};
+	static const ANSICHAR FileTypeFlag;
+	static const ANSICHAR FileTypeFlag1;
 
 	/** Directory type flag */
-	static constexpr inline ANSICHAR DirectoryTypeFlag{'5'};
+	static const ANSICHAR DirectoryTypeFlag;
 
 	/** Unsupported type flags */
-	static constexpr inline ANSICHAR HardLinkTypeFlag{'1'};
-	static constexpr inline ANSICHAR SymbolicLinkTypeFlag{'2'};
-	static constexpr inline ANSICHAR CharacterDeviceTypeFlag{'3'};
-	static constexpr inline ANSICHAR BlockDeviceTypeFlag{'4'};
-	static constexpr inline ANSICHAR FIFOTypeFlag{'6'};
+	static const ANSICHAR HardLinkTypeFlag;
+	static const ANSICHAR SymbolicLinkTypeFlag;
+	static const ANSICHAR CharacterDeviceTypeFlag;
+	static const ANSICHAR BlockDeviceTypeFlag;
+	static const ANSICHAR FIFOTypeFlag;
 
 	/** Array of string representation of type flags */
-	static const inline TMap<ANSICHAR, const TCHAR*> Strings{
-		{FileTypeFlag, TEXT("File")}, {FileTypeFlag1, TEXT("File")},
-		{DirectoryTypeFlag, TEXT("Directory")},
-		{HardLinkTypeFlag, TEXT("Hard link")},
-		{SymbolicLinkTypeFlag, TEXT("Symbolic link")},
-		{CharacterDeviceTypeFlag, TEXT("Character device")},
-		{BlockDeviceTypeFlag, TEXT("Block device")},
-		{FIFOTypeFlag, TEXT("FIFO")}
-	};
+	static const TMap<ANSICHAR, const TCHAR*> Strings;
 
 public:
 	/**
@@ -57,20 +49,21 @@ public:
 	 */
 	static bool IsDirectory(ANSICHAR TypeFlag)
 	{
-		switch (TypeFlag)
+		if (TypeFlag == FileTypeFlag || TypeFlag == FileTypeFlag1)
 		{
-		case FileTypeFlag:
-		case FileTypeFlag1:
-			return false;
-		case DirectoryTypeFlag:
-			return true;
-		default:
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("The type flag %hc (%s) is not supported. Supported type flags are %hc/%hc (%s) and %hc (%s)"),
-			       TypeFlag, ToString(TypeFlag),
-			       FileTypeFlag, FileTypeFlag1, ToString(FileTypeFlag),
-			       DirectoryTypeFlag, ToString(DirectoryTypeFlag));
 			return false;
 		}
+
+		if (TypeFlag == DirectoryTypeFlag)
+		{
+			return true;
+		}
+
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("The type flag %hc (%s) is not supported. Supported type flags are %hc/%hc (%s) and %hc (%s)"),
+		       TypeFlag, ToString(TypeFlag),
+		       FileTypeFlag, FileTypeFlag1, ToString(FileTypeFlag),
+		       DirectoryTypeFlag, ToString(DirectoryTypeFlag));
+		return false;
 	}
 
 	/**
@@ -80,6 +73,25 @@ public:
 	{
 		return bIsDirectory ? DirectoryTypeFlag : FileTypeFlag;
 	}
+};
+
+const ANSICHAR FTarTypeFlagHelper::FileTypeFlag{'0'};
+const ANSICHAR FTarTypeFlagHelper::FileTypeFlag1{'\0'};
+const ANSICHAR FTarTypeFlagHelper::DirectoryTypeFlag{'5'};
+const ANSICHAR FTarTypeFlagHelper::HardLinkTypeFlag{'1'};
+const ANSICHAR FTarTypeFlagHelper::SymbolicLinkTypeFlag{'2'};
+const ANSICHAR FTarTypeFlagHelper::CharacterDeviceTypeFlag{'3'};
+const ANSICHAR FTarTypeFlagHelper::BlockDeviceTypeFlag{'4'};
+const ANSICHAR FTarTypeFlagHelper::FIFOTypeFlag{'6'};
+
+const TMap<ANSICHAR, const TCHAR*> FTarTypeFlagHelper::Strings{
+	{FileTypeFlag, TEXT("File")}, {FileTypeFlag1, TEXT("File")},
+	{DirectoryTypeFlag, TEXT("Directory")},
+	{HardLinkTypeFlag, TEXT("Hard link")},
+	{SymbolicLinkTypeFlag, TEXT("Symbolic link")},
+	{CharacterDeviceTypeFlag, TEXT("Character device")},
+	{BlockDeviceTypeFlag, TEXT("Block device")},
+	{FIFOTypeFlag, TEXT("FIFO")}
 };
 
 /**
