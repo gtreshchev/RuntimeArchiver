@@ -269,8 +269,6 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 
 	TempUncompressedData.SetNumUninitialized(UncompressedSize);
 
-	UE_LOG(LogTemp, Warning, TEXT("Guess uncompressed size is %lld"), UncompressedSize)
-
 	if (!FCompression::UncompressMemory(FormatName, TempUncompressedData.GetData(), UncompressedSize, CompressedData.GetData(), CompressedData.Num()))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to uncompress data for '%s' format"), *FormatName.ToString());

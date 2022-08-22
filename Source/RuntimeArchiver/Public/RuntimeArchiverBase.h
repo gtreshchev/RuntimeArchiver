@@ -17,17 +17,16 @@ class RUNTIMEARCHIVER_API URuntimeArchiverBase : public UObject
 	GENERATED_BODY()
 
 public:
-
 	/**
 	 * Default constructor
 	 */
 	URuntimeArchiverBase();
-	
+
 	/**
 	 * Create an archiver to archive/unarchive files and directories
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver", meta = (WorldContext="WorldContextObject", DeterminesOutputType = "ArchiverClass"))
-	static URuntimeArchiverBase* CreateRuntimeArchiver(UObject* WorldContextObject, TSubclassOf<URuntimeArchiverBase> ArchiverClass);
+	static URuntimeArchiverBase* CreateRuntimeArchiver(UObject* WorldContextObject, UPARAM(meta = (AllowAbstract = "false")) TSubclassOf<URuntimeArchiverBase> ArchiverClass);
 
 	//~ Begin UObject Interface
 	virtual void BeginDestroy() override;
@@ -266,7 +265,6 @@ public:
 	virtual void Reset();
 
 protected:
-
 	/**
 	 * Report an error in the archiver
 	 *
