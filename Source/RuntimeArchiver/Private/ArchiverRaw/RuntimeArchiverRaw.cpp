@@ -133,7 +133,7 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 	CompressRawDataAsync(RawFormat, CompressionLevel, TArray64<uint8>(MoveTemp(UncompressedData)),
 	                     FRuntimeArchiverRawMemoryResultNative::CreateLambda([OnResult = MoveTemp(OnResult)](TArray64<uint8> CompressedData64)
 	                     {
-		                     if (CompressedData64.Num() > MAX_int32)
+		                     if (CompressedData64.Num() > TNumericLimits<TArray<uint8>::SizeType>::Max())
 		                     {
 			                     UE_LOG(LogRuntimeArchiver, Error, TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), MAX_int32, CompressedData64.Num());
 			                     OnResult.ExecuteIfBound({});

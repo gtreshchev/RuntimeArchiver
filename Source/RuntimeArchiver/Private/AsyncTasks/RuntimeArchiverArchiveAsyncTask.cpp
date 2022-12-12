@@ -53,11 +53,11 @@ void URuntimeArchiverArchiveAsyncTask::StartDirectory()
 {
 	if (!Archiver->CreateArchiveInStorage(DirectoryInfo.ArchivePath))
 	{
-		OnResult(false);
+		OnResult_Callback(false);
 		return;
 	}
 
-	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult_Callback);
 
 	Archiver->AddEntriesFromStorage_Directory(OperationResult, MoveTemp(DirectoryInfo.DirectoryPath), DirectoryInfo.bAddParentDirectory, DirectoryInfo.CompressionLevel);
 }
@@ -66,24 +66,32 @@ void URuntimeArchiverArchiveAsyncTask::StartFiles()
 {
 	if (!Archiver->CreateArchiveInStorage(FilesInfo.ArchivePath))
 	{
-		OnResult(false);
+		OnResult_Callback(false);
 		return;
 	}
 
-	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnResult_Callback);
+	OperationProgress.BindDynamic(this, &URuntimeArchiverArchiveAsyncTask::OnProgress_Callback);
 
-	Archiver->AddEntriesFromStorage(OperationResult, MoveTemp(FilesInfo.FilePaths), FilesInfo.CompressionLevel);
+	Archiver->AddEntriesFromStorage(OperationResult, OperationProgress, MoveTemp(FilesInfo.FilePaths), FilesInfo.CompressionLevel);
 }
 
-void URuntimeArchiverArchiveAsyncTask::OnResult(bool bSuccess)
+void URuntimeArchiverArchiveAsyncTask::OnResult_Callback(bool bSuccess)
 {
 	OperationResult.Clear();
 
 	if (!bSuccess || !Archiver->CloseArchive())
 	{
-		OnFail.Broadcast();
+		OnFail.Broadcast(0);
 		return;
 	}
 
-	OnSuccess.Broadcast();
+	OnSuccess.Broadcast(100);
+
+	SetReadyToDestroy();
+}
+
+void URuntimeArchiverArchiveAsyncTask::OnProgress_Callback(int32 Percentage)
+{
+	OnProgress.Broadcast(Percentage);
 }

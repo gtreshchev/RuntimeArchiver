@@ -9,8 +9,7 @@
 #include "Streams/RuntimeArchiverMemoryStream.h"
 
 URuntimeArchiverLZ4::URuntimeArchiverLZ4()
-	: TarArchiver{nullptr}
-  , LastCompressionLevel{ERuntimeArchiverCompressionLevel::Compression6}
+	: LastCompressionLevel{ERuntimeArchiverCompressionLevel::Compression6}
 {
 }
 
@@ -21,7 +20,7 @@ bool URuntimeArchiverLZ4::CreateArchiveInStorage(FString ArchivePath)
 		return false;
 	}
 
-	CompressedStream = new FRuntimeArchiverFileStream(ArchivePath, true);
+	CompressedStream.Reset(new FRuntimeArchiverFileStream(ArchivePath, true));
 
 	if (!CompressedStream->IsValid())
 	{
@@ -47,7 +46,7 @@ bool URuntimeArchiverLZ4::CreateArchiveInMemory(int32 InitialAllocationSize)
 		return false;
 	}
 
-	CompressedStream = new FRuntimeArchiverMemoryStream(InitialAllocationSize);
+	CompressedStream.Reset(new FRuntimeArchiverMemoryStream(InitialAllocationSize));
 
 	if (!CompressedStream->IsValid())
 	{
@@ -73,7 +72,7 @@ bool URuntimeArchiverLZ4::OpenArchiveFromStorage(FString ArchivePath)
 		return false;
 	}
 
-	CompressedStream = new FRuntimeArchiverFileStream(ArchivePath, false);
+	CompressedStream.Reset(new FRuntimeArchiverFileStream(ArchivePath, false));
 
 	if (!CompressedStream->IsValid())
 	{
@@ -119,7 +118,7 @@ bool URuntimeArchiverLZ4::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveDa
 		return false;
 	}
 
-	CompressedStream = new FRuntimeArchiverMemoryStream(ArchiveData);
+	CompressedStream.Reset(new FRuntimeArchiverMemoryStream(ArchiveData));
 
 	if (!CompressedStream->IsValid())
 	{
@@ -349,14 +348,10 @@ void URuntimeArchiverLZ4::Reset()
 	if (TarArchiver.IsValid())
 	{
 		TarArchiver->Reset();
-		TarArchiver = nullptr;
+		TarArchiver.Reset();
 	}
 
-	if (CompressedStream != nullptr)
-	{
-		delete CompressedStream;
-		CompressedStream = nullptr;
-	}
+	CompressedStream.Reset();
 
 	Super::Reset();
 

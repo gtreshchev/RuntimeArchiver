@@ -9,11 +9,6 @@
 #include "Streams/RuntimeArchiverMemoryStream.h"
 #include "Misc/Paths.h"
 
-URuntimeArchiverTar::URuntimeArchiverTar()
-	: TarEncapsulator{nullptr}
-{
-}
-
 bool URuntimeArchiverTar::CreateArchiveInStorage(FString ArchivePath)
 {
 	if (!Super::CreateArchiveInStorage(ArchivePath))
@@ -332,9 +327,9 @@ bool URuntimeArchiverTar::Initialize()
 		return false;
 	}
 
-	TarEncapsulator = new FRuntimeArchiverTarEncapsulator;
+	TarEncapsulator.Reset(new FRuntimeArchiverTarEncapsulator);
 
-	if (TarEncapsulator == nullptr)
+	if (!TarEncapsulator)
 	{
 		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for tar archiver"));
 		return false;
@@ -347,16 +342,12 @@ bool URuntimeArchiverTar::Initialize()
 
 bool URuntimeArchiverTar::IsInitialized() const
 {
-	return Super::IsInitialized() && TarEncapsulator != nullptr && TarEncapsulator->IsValid();
+	return Super::IsInitialized() && TarEncapsulator.IsValid() && TarEncapsulator->IsValid();
 }
 
 void URuntimeArchiverTar::Reset()
 {
-	if (TarEncapsulator != nullptr)
-	{
-		delete TarEncapsulator;
-		TarEncapsulator = nullptr;
-	}
+	TarEncapsulator.Reset();
 
 	Super::Reset();
 
@@ -369,8 +360,7 @@ void URuntimeArchiverTar::ReportError(ERuntimeArchiverErrorCode ErrorCode, const
 }
 
 FRuntimeArchiverTarEncapsulator::FRuntimeArchiverTarEncapsulator()
-	: Stream{nullptr}
-  , RemainingDataSize{0}
+	: RemainingDataSize{0}
   , LastHeaderPosition{0}
   , CachedNumOfHeaders{0}
   , bIsFinalized{false}
@@ -379,20 +369,20 @@ FRuntimeArchiverTarEncapsulator::FRuntimeArchiverTarEncapsulator()
 
 FRuntimeArchiverTarEncapsulator::~FRuntimeArchiverTarEncapsulator()
 {
-	if (Stream != nullptr)
+	if (Stream.IsValid())
 	{
 		if (Stream->IsWrite())
 		{
 			Finalize();
 		}
 
-		delete Stream;
+		Stream.Reset();
 	}
 }
 
 bool FRuntimeArchiverTarEncapsulator::IsValid()
 {
-	return Stream != nullptr && Stream->IsValid();
+	return Stream.IsValid() && Stream->IsValid();
 }
 
 bool FRuntimeArchiverTarEncapsulator::TestArchive()
@@ -414,13 +404,13 @@ bool FRuntimeArchiverTarEncapsulator::TestArchive()
 
 bool FRuntimeArchiverTarEncapsulator::OpenFile(const FString& ArchivePath, bool bWrite)
 {
-	if (Stream != nullptr)
+	if (Stream.IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open tar stream because it has already been opened"));
 		return false;
 	}
 
-	Stream = new FRuntimeArchiverFileStream(ArchivePath, bWrite);
+	Stream.Reset(new FRuntimeArchiverFileStream(ArchivePath, bWrite));
 
 	if (!Stream->IsValid())
 	{
@@ -433,13 +423,13 @@ bool FRuntimeArchiverTarEncapsulator::OpenFile(const FString& ArchivePath, bool 
 
 bool FRuntimeArchiverTarEncapsulator::OpenMemory(const TArray64<uint8>& ArchiveData, int32 InitialAllocationSize, bool bWrite)
 {
-	if (Stream != nullptr)
+	if (Stream.IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open tar stream because it has already been opened"));
 		return false;
 	}
 
-	Stream = bWrite ? new FRuntimeArchiverMemoryStream(InitialAllocationSize) : new FRuntimeArchiverMemoryStream(ArchiveData);
+	Stream.Reset(bWrite ? new FRuntimeArchiverMemoryStream(InitialAllocationSize) : new FRuntimeArchiverMemoryStream(ArchiveData));
 
 	if (!IsValid())
 	{

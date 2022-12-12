@@ -43,6 +43,10 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnSuccess;
 
+	/** Archiving in progress */
+	UPROPERTY(BlueprintAssignable)
+	FRuntimeArchiverAsyncActionResult OnProgress;
+
 	/** Archiving failed */
 	UPROPERTY(BlueprintAssignable)
 	FRuntimeArchiverAsyncActionResult OnFail;
@@ -79,10 +83,17 @@ private:
 
 	/** Used archiver */
 	UPROPERTY()
+#if ENGINE_MAJOR_VERSION >= 5
+	TObjectPtr<URuntimeArchiverBase> Archiver;
+#else
 	URuntimeArchiverBase* Archiver;
+#endif
 
 	/** Operation result delegate */
 	FRuntimeArchiverAsyncOperationResult OperationResult;
+
+	/** Operation in progress delegate */
+	FRuntimeArchiverAsyncOperationProgress OperationProgress;
 
 	/** Start archiving directory operation */
 	void StartDirectory();
@@ -96,5 +107,13 @@ private:
 	 * @param bSuccess Whether the result is successful or not
 	 */
 	UFUNCTION()
-	void OnResult(bool bSuccess);
+	void OnResult_Callback(bool bSuccess);
+
+	/**
+	 * Execute the progress of the operation
+	 *
+	 * @param Percentage Current operation percentage
+	 */
+	UFUNCTION()
+	void OnProgress_Callback(int32 Percentage);
 };

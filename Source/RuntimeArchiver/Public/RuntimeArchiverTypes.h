@@ -118,5 +118,8 @@ struct FRuntimeArchiveEntry
 /** Delegate broadcasting the result of asynchronous archive operations */
 DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverAsyncOperationResult, bool, bSuccess);
 
+/** Delegate broadcasting the progress of asynchronous archive operations */
+DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverAsyncOperationProgress, int32, Percentage);
+
 /** Dynamic delegate broadcasting the result of asynchronous archive actions */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRuntimeArchiverAsyncActionResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRuntimeArchiverAsyncActionResult, int32, Percentage);

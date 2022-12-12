@@ -8,6 +8,7 @@
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformFileManager.h"
+#include "UObject/GCObjectScopeGuard.h"
 
 URuntimeArchiverBase::URuntimeArchiverBase()
 	: Mode(ERuntimeArchiverMode::Undefined)
@@ -136,9 +137,9 @@ bool URuntimeArchiverBase::GetArchiveData(TArray<uint8>& ArchiveData)
 		return false;
 	}
 
-	if (ArchiveData64.Num() > MAX_int32)
+	if (ArchiveData64.Num() > TNumericLimits<TArray<uint8>::SizeType>::Max())
 	{
-		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), MAX_int32, ArchiveData64.Num()));
+		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), static_cast<int32>(TNumericLimits<TArray<uint8>::SizeType>::Max()), ArchiveData64.Num()));
 		return false;
 	}
 
@@ -249,7 +250,7 @@ bool URuntimeArchiverBase::AddEntryFromStorage(FString EntryName, FString FilePa
 	return true;
 }
 
-void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel)
+void URuntimeArchiverBase::AddEntriesFromStorage(const FRuntimeArchiverAsyncOperationResult& OnResult, const FRuntimeArchiverAsyncOperationProgress& OnProgress, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -258,18 +259,30 @@ void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationR
 		return;
 	}
 
-	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, OnProgress, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
 	{
-		auto ExecuteResult = [this, OnResult](bool bResult)
+		FGCObjectScopeGuard Guard(this);
+
+		auto ExecuteResult = [OnResult](bool bResult)
 		{
-			AsyncTask(ENamedThreads::GameThread, [this, OnResult, bResult]()
+			AsyncTask(ENamedThreads::GameThread, [OnResult, bResult]()
 			{
 				OnResult.ExecuteIfBound(bResult);
 			});
 		};
 
-		for (FString FilePath : FilePaths)
+		auto ExecuteProgress = [OnProgress](int32 Percentage)
 		{
+			AsyncTask(ENamedThreads::GameThread, [OnProgress, Percentage]()
+			{
+				OnProgress.ExecuteIfBound(Percentage);
+			});
+		};
+
+		for (TArray<FString>::SizeType FilePathsIndex = 0; FilePathsIndex < FilePaths.Num(); ++FilePathsIndex)
+		{
+			FString FilePath = FilePaths[FilePathsIndex];
+
 			FPaths::NormalizeFilename(FilePath);
 
 			const FString EntryName{FPaths::GetCleanFilename(FilePath)};
@@ -280,6 +293,8 @@ void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationR
 				ExecuteResult(false);
 				return;
 			}
+
+			ExecuteProgress(static_cast<float>(FilePathsIndex + 1) / FilePaths.Num() * 100);
 		}
 
 		UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added '%d' entries"), FilePaths.Num());
@@ -288,7 +303,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage(FRuntimeArchiverAsyncOperationR
 	});
 }
 
-void URuntimeArchiverBase::AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel)
+void URuntimeArchiverBase::AddEntriesFromStorage_Directory(const FRuntimeArchiverAsyncOperationResult& OnResult, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel)
 {
 	if (!IsInitialized())
 	{
@@ -323,11 +338,12 @@ void URuntimeArchiverBase::AddEntriesFromStorage_Directory(FRuntimeArchiverAsync
 			BasePath += TEXT("/");
 		}
 
-		return MoveTemp(BasePath);
+		return BasePath;
 	}();
 
-	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, BaseDirectoryPathToExclude, DirectoryPath = MoveTemp(DirectoryPath), CompressionLevel]()
 	{
+		FGCObjectScopeGuard Guard(this);
 		const bool bResult{AddEntriesFromStorage_Directory_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel)};
 
 		if (bResult)
@@ -347,8 +363,9 @@ bool URuntimeArchiverBase::AddEntriesFromStorage_Directory_Internal(FString Base
 	class FDirectoryVisitor_EntryAppender : public IPlatformFile::FDirectoryVisitor
 	{
 		URuntimeArchiverBase* RuntimeArchiver;
-		const FString& BaseDirectoryPathToExclude;
-		ERuntimeArchiverCompressionLevel CompressionLevel;
+		const FString BaseDirectoryPathToExclude;
+		const ERuntimeArchiverCompressionLevel CompressionLevel;
+
 	public:
 		FDirectoryVisitor_EntryAppender(URuntimeArchiverBase* RuntimeArchiver, const FString& BaseDirectoryPathToExclude, ERuntimeArchiverCompressionLevel CompressionLevel)
 			: RuntimeArchiver(RuntimeArchiver)
@@ -494,7 +511,7 @@ bool URuntimeArchiverBase::ExtractEntryToStorage(const FRuntimeArchiveEntry& Ent
 	return true;
 }
 
-void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FRuntimeArchiveEntry> EntryInfo, FString DirectoryPath, bool bForceOverwrite)
+void URuntimeArchiverBase::ExtractEntriesToStorage(const FRuntimeArchiverAsyncOperationResult& OnResult, const FRuntimeArchiverAsyncOperationProgress& OnProgress, TArray<FRuntimeArchiveEntry> EntryInfo, FString DirectoryPath, bool bForceOverwrite)
 {
 	if (!IsInitialized())
 	{
@@ -505,23 +522,35 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperatio
 
 	FPaths::NormalizeDirectoryName(DirectoryPath);
 
-	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, EntryInfo = MoveTemp(EntryInfo), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, OnProgress, EntryInfo = MoveTemp(EntryInfo), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
 	{
-		auto ExecuteResult = [this, OnResult](bool bResult)
+		FGCObjectScopeGuard Guard(this);
+
+		auto ExecuteResult = [OnResult](bool bResult)
 		{
-			AsyncTask(ENamedThreads::GameThread, [this, OnResult, bResult]()
+			AsyncTask(ENamedThreads::GameThread, [OnResult, bResult]()
 			{
 				OnResult.ExecuteIfBound(bResult);
 			});
 		};
 
-		for (const FRuntimeArchiveEntry& Entry : EntryInfo)
+		auto ExecuteProgress = [OnProgress](int32 Percentage)
 		{
+			AsyncTask(ENamedThreads::GameThread, [OnProgress, Percentage]()
+			{
+				OnProgress.ExecuteIfBound(Percentage);
+			});
+		};
+
+		for (int32 EntryIndex = 0; EntryIndex < EntryInfo.Num(); ++EntryIndex)
+		{
+			const FRuntimeArchiveEntry& Entry = EntryInfo[EntryIndex];
+
 			const FString ExtractFilePath = [&Entry]()
 			{
 				FString FilePath = Entry.Name;
 				FPaths::NormalizeDirectoryName(FilePath);
-				return MoveTemp(FilePath);
+				return FilePath;
 			}();
 
 			if (!ExtractEntryToStorage(Entry, FPaths::Combine(DirectoryPath, TEXT("/"), ExtractFilePath), bForceOverwrite))
@@ -530,6 +559,8 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(FRuntimeArchiverAsyncOperatio
 				ExecuteResult(false);
 				return;
 			}
+
+			ExecuteProgress(static_cast<float>(EntryIndex + 1) / EntryInfo.Num() * 100);
 		}
 
 		UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted '%d' entries"), EntryInfo.Num());
@@ -568,7 +599,7 @@ namespace
 	}
 }
 
-void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
+void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(const FRuntimeArchiverAsyncOperationResult& OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite)
 {
 	if (!IsInitialized())
 	{
@@ -596,11 +627,12 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(FRuntimeArchiverAsy
 			}
 		}
 
-		return MoveTemp(BasePath);
+		return BasePath;
 	}();
 
-	AsyncTask(ENamedThreads::AnyThread, [this, OnResult, NumOfEntries, EntryName, DirectoryPath, BaseDirectoryPathToExclude, bForceOverwrite]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, NumOfEntries, EntryName, DirectoryPath, BaseDirectoryPathToExclude, bForceOverwrite]()
 	{
+		FGCObjectScopeGuard Guard(this);
 		bool bResult{true};
 
 		for (int32 EntryIndex = 0; EntryIndex < NumOfEntries; ++EntryIndex)
@@ -648,9 +680,9 @@ bool URuntimeArchiverBase::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entr
 		return false;
 	}
 
-	if (UnarchivedData64.Num() > MAX_int32)
+	if (UnarchivedData64.Num() > TNumericLimits<TArray<uint8>::SizeType>::Max())
 	{
-		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), MAX_int32, UnarchivedData64.Num()));
+		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), static_cast<int32>(TNumericLimits<TArray<uint8>::SizeType>::Max()), UnarchivedData64.Num()));
 		return false;
 	}
 
@@ -707,9 +739,7 @@ void URuntimeArchiverBase::ReportError(ERuntimeArchiverErrorCode ErrorCode, cons
 		return;
 	}
 
-	const URuntimeArchiverSubsystem* ArchiveSubsystem{URuntimeArchiverSubsystem::GetArchiveSubsystem()};
-
-	if (ArchiveSubsystem != nullptr)
+	if (const URuntimeArchiverSubsystem* ArchiveSubsystem{URuntimeArchiverSubsystem::GetArchiveSubsystem()})
 	{
 		if (ArchiveSubsystem->OnError.IsBound())
 		{

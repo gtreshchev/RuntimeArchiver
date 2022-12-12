@@ -146,11 +146,12 @@ public:
 	 * Add entries from storage. In other words, import files into the archive
 	 *
 	 * @param OnResult Delegate broadcasting the result
+	 * @param OnProgress Delegate broadcasting the progress
 	 * @param FilePaths File paths to be archived
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	void AddEntriesFromStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
+	void AddEntriesFromStorage(const FRuntimeArchiverAsyncOperationResult& OnResult, const FRuntimeArchiverAsyncOperationProgress& OnProgress, TArray<FString> FilePaths, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 	/**
 	 * Add entries from storage. Must be used for directories only
@@ -161,7 +162,7 @@ public:
 	 * @param CompressionLevel Compression level. The higher the level, the more compression
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Add")
-	void AddEntriesFromStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
+	void AddEntriesFromStorage_Directory(const FRuntimeArchiverAsyncOperationResult& OnResult, FString DirectoryPath, bool bAddParentDirectory, ERuntimeArchiverCompressionLevel CompressionLevel = ERuntimeArchiverCompressionLevel::Compression6);
 
 private:
 	/**
@@ -211,12 +212,13 @@ public:
 	 * Extract entries to storage. In other words, extract the file from the archive to storage
 	 *
 	 * @param OnResult Delegate broadcasting the result
+	 * @param OnProgress Delegate broadcasting the progress
 	 * @param EntryInfo Array of all entries to extract
 	 * @param DirectoryPath Path to the directory for exporting entries
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
-	void ExtractEntriesToStorage(FRuntimeArchiverAsyncOperationResult OnResult, TArray<FRuntimeArchiveEntry> EntryInfo, FString DirectoryPath, bool bForceOverwrite = true);
+	void ExtractEntriesToStorage(const FRuntimeArchiverAsyncOperationResult& OnResult, const FRuntimeArchiverAsyncOperationProgress& OnProgress, TArray<FRuntimeArchiveEntry> EntryInfo, FString DirectoryPath, bool bForceOverwrite = true);
 
 	/**
 	 * Extract entries to storage. Must be used for directories only
@@ -228,7 +230,7 @@ public:
 	 * @param bForceOverwrite Whether to force a file to be overwritten if it exists or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Extract")
-	void ExtractEntriesToStorage_Directory(FRuntimeArchiverAsyncOperationResult OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
+	void ExtractEntriesToStorage_Directory(const FRuntimeArchiverAsyncOperationResult& OnResult, FString EntryName, FString DirectoryPath, bool bAddParentDirectory, bool bForceOverwrite = true);
 
 	/**
 	 * Extract entry into memory. In other words, extract the file from the archive into memory

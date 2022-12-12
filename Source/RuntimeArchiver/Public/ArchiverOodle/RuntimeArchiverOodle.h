@@ -52,7 +52,7 @@ private:
 	TStrongObjectPtr<URuntimeArchiverTar> TarArchiver;
 
 	/** Stream containing LZ4 compressed data */
-	FRuntimeArchiverBaseStream* CompressedStream;
+	TUniquePtr<FRuntimeArchiverBaseStream> CompressedStream;
 
 	/** Last saved compression level */
 	ERuntimeArchiverCompressionLevel LastCompressionLevel;

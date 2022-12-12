@@ -18,9 +18,6 @@ class RUNTIMEARCHIVER_API URuntimeArchiverTar : public URuntimeArchiverBase
 	GENERATED_BODY()
 
 public:
-	/** Default constructor */
-	URuntimeArchiverTar();
-
 	//~ Begin URuntimeArchiverBase Interface
 	virtual bool CreateArchiveInStorage(FString ArchivePath) override;
 	virtual bool CreateArchiveInMemory(int32 InitialAllocationSize = 0) override;
@@ -50,7 +47,7 @@ public:
 
 private:
 	/** Tar encapsulator */
-	FRuntimeArchiverTarEncapsulator* TarEncapsulator;
+	TUniquePtr<FRuntimeArchiverTarEncapsulator> TarEncapsulator;
 };
 
 /**
@@ -184,7 +181,7 @@ public:
 
 private:
 	/** Used stream */
-	class FRuntimeArchiverBaseStream* Stream;
+	TUniquePtr<class FRuntimeArchiverBaseStream> Stream;
 
 	/** Remaining read or write data size */
 	int64 RemainingDataSize;

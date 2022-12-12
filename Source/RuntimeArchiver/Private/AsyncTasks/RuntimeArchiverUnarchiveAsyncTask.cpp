@@ -55,11 +55,11 @@ void URuntimeArchiverUnarchiveAsyncTask::StartDirectory()
 {
 	if (!Archiver->OpenArchiveFromStorage(DirectoryInfo.ArchivePath))
 	{
-		OnFail.Broadcast();
+		OnFail.Broadcast(0);
 		return;
 	}
 
-	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnResult_Callback);
 
 	Archiver->ExtractEntriesToStorage_Directory(OperationResult, MoveTemp(DirectoryInfo.EntryName), MoveTemp(DirectoryInfo.DirectoryPath), DirectoryInfo.bAddParentDirectory, DirectoryInfo.bForceOverwrite);
 }
@@ -68,11 +68,12 @@ void URuntimeArchiverUnarchiveAsyncTask::StartFiles()
 {
 	if (!Archiver->OpenArchiveFromStorage(FilesInfo.ArchivePath))
 	{
-		OnFail.Broadcast();
+		OnFail.Broadcast(0);
 		return;
 	}
 
-	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnResult);
+	OperationResult.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnResult_Callback);
+	OperationProgress.BindDynamic(this, &URuntimeArchiverUnarchiveAsyncTask::OnProgress_Callback);
 
 	TArray<FRuntimeArchiveEntry> Entries;
 
@@ -84,7 +85,7 @@ void URuntimeArchiverUnarchiveAsyncTask::StartFiles()
 			if (!Archiver->GetArchiveEntryInfoByName(EntryName, Entry))
 			{
 				UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to find '%s' archive entry"), *EntryName);
-				OnResult(false);
+				OnResult_Callback(false);
 				return;
 			}
 
@@ -92,10 +93,10 @@ void URuntimeArchiverUnarchiveAsyncTask::StartFiles()
 		}
 	}
 
-	Archiver->ExtractEntriesToStorage(OperationResult, MoveTemp(Entries), MoveTemp(FilesInfo.DirectoryPath), MoveTemp(FilesInfo.bForceOverwrite));
+	Archiver->ExtractEntriesToStorage(OperationResult, OperationProgress, MoveTemp(Entries), MoveTemp(FilesInfo.DirectoryPath), MoveTemp(FilesInfo.bForceOverwrite));
 }
 
-void URuntimeArchiverUnarchiveAsyncTask::OnResult(bool bSuccess)
+void URuntimeArchiverUnarchiveAsyncTask::OnResult_Callback(bool bSuccess)
 {
 	OperationResult.Clear();
 
@@ -103,9 +104,14 @@ void URuntimeArchiverUnarchiveAsyncTask::OnResult(bool bSuccess)
 	
 	if (!bSuccess)
 	{
-		OnFail.Broadcast();
+		OnFail.Broadcast(0);
 		return;
 	}
 
-	OnSuccess.Broadcast();
+	OnSuccess.Broadcast(100);
+}
+
+void URuntimeArchiverUnarchiveAsyncTask::OnProgress_Callback(int32 Percentage)
+{
+	OnProgress.Broadcast(Percentage);
 }

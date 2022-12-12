@@ -299,7 +299,7 @@ bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 	size_t EntryInMemorySize;
 	void* EntryInMemoryPtr{mz_zip_reader_extract_to_heap(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryInfo.Index), &EntryInMemorySize, 0)};
 
-	if (EntryInMemoryPtr == nullptr)
+	if (!EntryInMemoryPtr)
 	{
 		ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to extract zip entry '%s' into memory"), *EntryInfo.Name));
 		return false;
@@ -324,7 +324,7 @@ bool URuntimeArchiverZip::Initialize()
 	// Creating Miniz archiver
 	MinizArchiver = static_cast<mz_zip_archive*>(FMemory::Memzero(FMemory::Malloc(sizeof(mz_zip_archive)), sizeof(mz_zip_archive)));
 
-	if (MinizArchiver == nullptr)
+	if (!MinizArchiver)
 	{
 		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for zip archiver"));
 		return false;
@@ -337,12 +337,12 @@ bool URuntimeArchiverZip::Initialize()
 
 bool URuntimeArchiverZip::IsInitialized() const
 {
-	return Super::IsInitialized() && MinizArchiver != nullptr;
+	return Super::IsInitialized() && MinizArchiver;
 }
 
 void URuntimeArchiverZip::Reset()
 {
-	if (MinizArchiver != nullptr)
+	if (MinizArchiver)
 	{
 		FMemory::Free(MinizArchiver);
 		MinizArchiver = nullptr;
