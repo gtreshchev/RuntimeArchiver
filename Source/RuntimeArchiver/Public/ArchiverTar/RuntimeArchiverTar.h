@@ -8,6 +8,7 @@
 
 struct FTarHeader;
 class FRuntimeArchiverTarEncapsulator;
+class FRuntimeArchiverBaseStream;
 
 /**
  * Tar archiver class. Works with tar archives. Inspired by Microtar
@@ -181,7 +182,7 @@ public:
 
 private:
 	/** Used stream */
-	TUniquePtr<class FRuntimeArchiverBaseStream> Stream;
+	TUniquePtr<FRuntimeArchiverBaseStream> Stream;
 
 	/** Remaining read or write data size */
 	int64 RemainingDataSize;

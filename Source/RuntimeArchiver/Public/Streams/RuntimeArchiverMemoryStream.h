@@ -10,6 +10,8 @@ public:
 	/** It should be impossible to create this object by the default constructor */
 	FRuntimeArchiverMemoryStream() = delete;
 	
+	virtual ~FRuntimeArchiverMemoryStream() override = default;
+	
 	/**
 	 * Read-only constructor
 	 *

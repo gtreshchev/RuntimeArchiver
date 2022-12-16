@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeArchiverBase.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
+#include "Launch/Resources/Version.h"
 #include "RuntimeArchiverArchiveAsyncTask.generated.h"
 
 /**
