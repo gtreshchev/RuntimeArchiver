@@ -4,11 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "RuntimeArchiverBase.h"
+#include "Launch/Resources/Version.h"
+
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+class FRuntimeArchiverBaseStream;
+#else
+#include "Streams/RuntimeArchiverBaseStream.h"
+#endif
 #include "RuntimeArchiverTar.generated.h"
 
 struct FTarHeader;
 class FRuntimeArchiverTarEncapsulator;
-class FRuntimeArchiverBaseStream;
 
 /**
  * Tar archiver class. Works with tar archives. Inspired by Microtar
