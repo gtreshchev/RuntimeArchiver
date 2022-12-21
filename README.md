@@ -7,7 +7,7 @@
 <h3 align="center">Runtime Archiver</h3>
 
   <p align="center">
-    Archiving and dearchiving directories and files
+    Cross-platform archiving and unarchiving directories and files
     <br/>
     <br/>
     <a href="https://github.com/gtreshchev/RuntimeArchiver/wiki"><strong>Explore the docs »</strong></a>
