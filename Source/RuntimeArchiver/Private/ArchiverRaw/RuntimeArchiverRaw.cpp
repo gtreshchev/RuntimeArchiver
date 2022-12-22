@@ -128,10 +128,10 @@ namespace OodleConversation
 }
 #endif
 
-void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray<uint8> UncompressedData, FRuntimeArchiverRawMemoryResult OnResult)
+void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray<uint8> UncompressedData, const FRuntimeArchiverRawMemoryResult& OnResult)
 {
 	CompressRawDataAsync(RawFormat, CompressionLevel, TArray64<uint8>(MoveTemp(UncompressedData)),
-	                     FRuntimeArchiverRawMemoryResultNative::CreateLambda([OnResult = MoveTemp(OnResult)](TArray64<uint8> CompressedData64)
+	                     FRuntimeArchiverRawMemoryResultNative::CreateLambda([OnResult](TArray64<uint8> CompressedData64)
 	                     {
 		                     if (CompressedData64.Num() > TNumericLimits<TArray<uint8>::SizeType>::Max())
 		                     {
@@ -143,9 +143,9 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 	                     }));
 }
 
-void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray64<uint8> UncompressedData, FRuntimeArchiverRawMemoryResultNative OnResult)
+void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray64<uint8> UncompressedData, const FRuntimeArchiverRawMemoryResultNative& OnResult)
 {
-	AsyncTask(ENamedThreads::AnyThread, [RawFormat, CompressionLevel, UncompressedData = MoveTemp(UncompressedData), OnResult = MoveTemp(OnResult)]() mutable
+	AsyncTask(ENamedThreads::AnyThread, [RawFormat, CompressionLevel, UncompressedData = MoveTemp(UncompressedData), OnResult]() mutable
 	{
 		TArray64<uint8> CompressedData;
 		CompressRawData(RawFormat, CompressionLevel, MoveTemp(UncompressedData), CompressedData);

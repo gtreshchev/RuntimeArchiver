@@ -7,8 +7,8 @@
 #include "UObject/Object.h"
 #include "RuntimeArchiverRaw.generated.h"
 
-DECLARE_DELEGATE_OneParam(FRuntimeArchiverRawMemoryResultNative, TArray64<uint8>);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverRawMemoryResult, TArray<uint8>, Data);
+DECLARE_DELEGATE_OneParam(FRuntimeArchiverRawMemoryResultNative, const TArray64<uint8>&);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FRuntimeArchiverRawMemoryResult, const TArray<uint8>&, Data);
 
 /**
  * Raw archiver class. Works with various archives, especially those specific to the engine, such as Oodle, LZ4, GZip, etc.
@@ -29,7 +29,7 @@ public:
 	 * @return Whether the compression was successful or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Raw")
-	static void CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray<uint8> UncompressedData, FRuntimeArchiverRawMemoryResult OnResult);
+	static void CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray<uint8> UncompressedData, const FRuntimeArchiverRawMemoryResult& OnResult);
 
 	/**
 	 * Asynchronously compress raw data. Prefer to use this function if possible
@@ -40,7 +40,7 @@ public:
 	 * @param OnResult Delegate broadcasting the result
 	 * @return Whether the compression was successful or not
 	 */
-	static void CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray64<uint8> UncompressedData, FRuntimeArchiverRawMemoryResultNative OnResult);
+	static void CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray64<uint8> UncompressedData, const FRuntimeArchiverRawMemoryResultNative& OnResult);
 
 	/**
 	 * Compress raw data
