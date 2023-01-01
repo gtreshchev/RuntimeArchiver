@@ -1,4 +1,4 @@
-﻿// Georgy Treshchev 2022.
+﻿// Georgy Treshchev 2023.
 
 #include "ArchiverLZ4/RuntimeArchiverLZ4.h"
 #include "RuntimeArchiverDefines.h"
