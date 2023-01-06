@@ -150,7 +150,7 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 		TArray64<uint8> CompressedData;
 		CompressRawData(RawFormat, CompressionLevel, MoveTemp(UncompressedData), CompressedData);
 
-		AsyncTask(ENamedThreads::GameThread, [&OnResult, CompressedData = MoveTemp(CompressedData)]() mutable
+		AsyncTask(ENamedThreads::GameThread, [OnResult, CompressedData = MoveTemp(CompressedData)]() mutable
 		{
 			OnResult.ExecuteIfBound(MoveTemp(CompressedData));
 		});
@@ -159,7 +159,7 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 
 bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
 {
-	const FName& FormatName{ToName(RawFormat)};
+	const FName FormatName{ToName(RawFormat)};
 
 	if (!IsFormatValid(FormatName))
 	{
@@ -205,10 +205,10 @@ bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, E
 	return true;
 }
 
-void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray<uint8> CompressedData, FRuntimeArchiverRawMemoryResult OnResult)
+void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray<uint8> CompressedData, const FRuntimeArchiverRawMemoryResult& OnResult)
 {
 	UncompressRawDataAsync(RawFormat, TArray64<uint8>(MoveTemp(CompressedData)),
-	                       FRuntimeArchiverRawMemoryResultNative::CreateLambda([OnResult = MoveTemp(OnResult)](TArray64<uint8> UncompressedData64)
+	                       FRuntimeArchiverRawMemoryResultNative::CreateLambda([OnResult](TArray64<uint8> UncompressedData64)
 	                       {
 		                       if (UncompressedData64.Num() > MAX_int32)
 		                       {
@@ -220,14 +220,14 @@ void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFo
 	                       }));
 }
 
-void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray64<uint8> CompressedData, FRuntimeArchiverRawMemoryResultNative OnResult)
+void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray64<uint8> CompressedData, const FRuntimeArchiverRawMemoryResultNative& OnResult)
 {
 	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [RawFormat, CompressedData = MoveTemp(CompressedData), OnResult]() mutable
 	{
 		TArray64<uint8> UncompressedData;
-		UncompressRawData(RawFormat, MoveTemp(CompressedData), UncompressedData);
+		UncompressRawData(RawFormat, CompressedData = MoveTemp(CompressedData), UncompressedData);
 
-		AsyncTask(ENamedThreads::GameThread, [&OnResult, UncompressedData = MoveTemp(UncompressedData)]() mutable
+		AsyncTask(ENamedThreads::GameThread, [OnResult, UncompressedData = MoveTemp(UncompressedData)]() mutable
 		{
 			OnResult.ExecuteIfBound(MoveTemp(UncompressedData));
 		});
@@ -236,7 +236,7 @@ void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFo
 
 bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat, TArray64<uint8> CompressedData, TArray64<uint8>& UncompressedData)
 {
-	const FName& FormatName{ToName(RawFormat)};
+	const FName FormatName{ToName(RawFormat)};
 
 	if (!IsFormatValid(FormatName))
 	{
@@ -282,7 +282,7 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 
 int64 URuntimeArchiverRaw::GuessCompressedSize(ERuntimeArchiverRawFormat RawFormat, const TArray64<uint8>& UncompressedData)
 {
-	const FName& FormatName{ToName(RawFormat)};
+	const FName FormatName{ToName(RawFormat)};
 
 	if (!IsFormatValid(FormatName))
 	{
@@ -321,7 +321,7 @@ int64 URuntimeArchiverRaw::GuessUncompressedSize(ERuntimeArchiverRawFormat RawFo
 		}
 	default:
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("The compressed buffer is ill-formed"));
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to determine the uncompressed size of the format '%s'"), *UEnum::GetValueAsString(RawFormat));
 		}
 	}
 

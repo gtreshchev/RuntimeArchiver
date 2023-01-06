@@ -62,7 +62,7 @@ public:
 	 * @return Whether the compression was successful or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Raw")
-	static void UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray<uint8> CompressedData, FRuntimeArchiverRawMemoryResult OnResult);
+	static void UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray<uint8> CompressedData, const FRuntimeArchiverRawMemoryResult& OnResult);
 
 	/**
 	 * Asynchronously uncompress raw data. Prefer to use this function if possible
@@ -72,7 +72,7 @@ public:
 	 * @param OnResult Delegate broadcasting the result
 	 * @return Whether the compression was successful or not
 	 */
-	static void UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray64<uint8> CompressedData, FRuntimeArchiverRawMemoryResultNative OnResult);
+	static void UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, TArray64<uint8> CompressedData, const FRuntimeArchiverRawMemoryResultNative& OnResult);
 
 	/**
 	 * Uncompress raw data
