@@ -26,17 +26,17 @@ class FTarTypeFlagHelper
 	static const ANSICHAR FIFOTypeFlag;
 
 	/** Array of string representation of type flags */
-	static const TMap<ANSICHAR, const TCHAR*> Strings;
+	static const TMap<ANSICHAR, FString> Strings;
 
 public:
 	/**
 	 * Get a string representation of the specified type flag
 	 */
-	static const TCHAR* ToString(ANSICHAR TypeFlag)
+	static FString ToString(ANSICHAR TypeFlag)
 	{
-		const TCHAR* const* String = Strings.Find(TypeFlag);
+		FString const* String = Strings.Find(TypeFlag);
 
-		if (String == nullptr)
+		if (!String)
 		{
 			return TEXT("Unrecognized type flag");
 		}
@@ -84,7 +84,7 @@ const ANSICHAR FTarTypeFlagHelper::CharacterDeviceTypeFlag{'3'};
 const ANSICHAR FTarTypeFlagHelper::BlockDeviceTypeFlag{'4'};
 const ANSICHAR FTarTypeFlagHelper::FIFOTypeFlag{'6'};
 
-const TMap<ANSICHAR, const TCHAR*> FTarTypeFlagHelper::Strings{
+const TMap<ANSICHAR, FString> FTarTypeFlagHelper::Strings{
 	{FileTypeFlag, TEXT("File")}, {FileTypeFlag1, TEXT("File")},
 	{DirectoryTypeFlag, TEXT("Directory")},
 	{HardLinkTypeFlag, TEXT("Hard link")},

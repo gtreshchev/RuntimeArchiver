@@ -135,8 +135,8 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 	                     {
 		                     if (CompressedData64.Num() > TNumericLimits<TArray<uint8>::SizeType>::Max())
 		                     {
-			                     UE_LOG(LogRuntimeArchiver, Error, TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), MAX_int32, CompressedData64.Num());
-			                     OnResult.ExecuteIfBound({});
+			                     UE_LOG(LogRuntimeArchiver, Error, TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), TNumericLimits<TArray<uint8>::SizeType>::Max(), CompressedData64.Num());
+			                     OnResult.ExecuteIfBound(TArray<uint8>());
 			                     return;
 		                     }
 		                     OnResult.ExecuteIfBound(TArray<uint8>(MoveTemp(CompressedData64)));
@@ -210,10 +210,10 @@ void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFo
 	UncompressRawDataAsync(RawFormat, TArray64<uint8>(MoveTemp(CompressedData)),
 	                       FRuntimeArchiverRawMemoryResultNative::CreateLambda([OnResult](TArray64<uint8> UncompressedData64)
 	                       {
-		                       if (UncompressedData64.Num() > MAX_int32)
+		                       if (UncompressedData64.Num() > TNumericLimits<TArray<uint8>::SizeType>::Max())
 		                       {
-			                       UE_LOG(LogRuntimeArchiver, Error, TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), MAX_int32, UncompressedData64.Num());
-			                       OnResult.ExecuteIfBound({});
+			                       UE_LOG(LogRuntimeArchiver, Error, TEXT("Array with int32 size (max length: %d) cannot fit int64 size data (retrieved length: %lld)\nA standard byte array can hold a maximum of 2 GB of data"), TNumericLimits<TArray<uint8>::SizeType>::Max(), UncompressedData64.Num());
+			                       OnResult.ExecuteIfBound(TArray<uint8>());
 			                       return;
 		                       }
 		                       OnResult.ExecuteIfBound(TArray<uint8>(MoveTemp(UncompressedData64)));
