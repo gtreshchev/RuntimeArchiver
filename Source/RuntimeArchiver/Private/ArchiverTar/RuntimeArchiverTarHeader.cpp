@@ -60,9 +60,9 @@ public:
 		}
 
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("The type flag %hc (%s) is not supported. Supported type flags are %hc/%hc (%s) and %hc (%s)"),
-		       TypeFlag, ToString(TypeFlag),
-		       FileTypeFlag, FileTypeFlag1, ToString(FileTypeFlag),
-		       DirectoryTypeFlag, ToString(DirectoryTypeFlag));
+		       TypeFlag, *ToString(TypeFlag),
+		       FileTypeFlag, FileTypeFlag1, *ToString(FileTypeFlag),
+		       DirectoryTypeFlag, *ToString(DirectoryTypeFlag));
 		return false;
 	}
 
@@ -110,13 +110,13 @@ public:
 	{
 		if (*Header.Checksum == '\0')
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header is NULL"), *Header.GetName());
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header '%hs' is NULL"), Header.GetName());
 			return false;
 		}
 
 		if (BuildChecksum(Header) != Header.GetChecksum())
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header is invalid"), *Header.GetName())
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header %hs' is invalid"), Header.GetName())
 			return false;
 		}
 
