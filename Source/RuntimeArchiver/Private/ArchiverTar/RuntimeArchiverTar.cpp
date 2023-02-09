@@ -123,24 +123,21 @@ bool URuntimeArchiverTar::GetArchiveData(TArray64<uint8>& ArchiveData)
 	return true;
 }
 
-int32 URuntimeArchiverTar::GetArchiveEntries()
+bool URuntimeArchiverTar::GetArchiveEntries(int32& NumOfArchiveEntries)
 {
-	if (Super::GetArchiveEntries() < 0)
+	if (!Super::GetArchiveEntries(NumOfArchiveEntries))
 	{
 		return false;
 	}
 
-	const int32 NumOfEntries{TarEncapsulator->GetArchiveEntries()};
-
-	if (NumOfEntries < 0)
+	if (!TarEncapsulator->GetArchiveEntries(NumOfArchiveEntries))
 	{
 		ReportError(ERuntimeArchiverErrorCode::GetError, TEXT("Unable to get number of tar entries"));
 		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d tar entries"), NumOfEntries);
-
-	return NumOfEntries;
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d tar entries"), NumOfArchiveEntries);
+	return true;
 }
 
 bool URuntimeArchiverTar::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
@@ -283,9 +280,8 @@ bool URuntimeArchiverTar::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 		return false;
 	}
 
-	const int32 NumOfArchiveEntries{GetArchiveEntries()};
-
-	if (EntryInfo.Index > (NumOfArchiveEntries - 1) || EntryInfo.Index < 0)
+	int32 NumOfArchiveEntries;
+	if (!GetArchiveEntries(NumOfArchiveEntries) || EntryInfo.Index > (NumOfArchiveEntries - 1))
 	{
 		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Tar entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
 		return false;
@@ -490,7 +486,7 @@ bool FRuntimeArchiverTarEncapsulator::FindIf(TFunctionRef<bool(const FTarHeader&
 	return bFound;
 }
 
-int32 FRuntimeArchiverTarEncapsulator::GetArchiveEntries()
+bool FRuntimeArchiverTarEncapsulator::GetArchiveEntries(int32& NumOfArchiveEntries)
 {
 	if (!IsValid())
 	{
@@ -498,12 +494,13 @@ int32 FRuntimeArchiverTarEncapsulator::GetArchiveEntries()
 		return false;
 	}
 
-	// TODO: check the last entry if it is valid
+	// TODO: verify the validity of the last entry
 
 	// Read-only mode is supposed to have a fixed (immutable) number of entries, so if possible, return the cached number of entries in this mode to improve performance
 	if (!Stream->IsWrite() && CachedNumOfHeaders > 0)
 	{
-		return CachedNumOfHeaders;
+		NumOfArchiveEntries = CachedNumOfHeaders;
+		return true;
 	}
 
 	const int64 PreviousPosition{Stream->Tell()};
@@ -512,7 +509,7 @@ int32 FRuntimeArchiverTarEncapsulator::GetArchiveEntries()
 	if (!Rewind())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to rewind read/write position of tar archive to get the number of archive entries"));
-		return -1;
+		return false;
 	}
 
 	FTarHeader TempHeader;
@@ -537,7 +534,8 @@ int32 FRuntimeArchiverTarEncapsulator::GetArchiveEntries()
 		CachedNumOfHeaders = NumOfHeaders;
 	}
 
-	return NumOfHeaders;
+	NumOfArchiveEntries = NumOfHeaders;
+	return true;
 }
 
 bool FRuntimeArchiverTarEncapsulator::GetArchiveData(TArray64<uint8>& ArchiveData)

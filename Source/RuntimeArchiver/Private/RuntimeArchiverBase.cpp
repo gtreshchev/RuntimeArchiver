@@ -159,15 +159,15 @@ bool URuntimeArchiverBase::GetArchiveData(TArray64<uint8>& ArchiveData)
 	return true;
 }
 
-int32 URuntimeArchiverBase::GetArchiveEntries()
+bool URuntimeArchiverBase::GetArchiveEntries(int32& NumOfArchiveEntries)
 {
 	if (!IsInitialized())
 	{
 		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Archiver is not initialized"));
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 bool URuntimeArchiverBase::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
@@ -608,7 +608,13 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(const FRuntimeArchi
 		return;
 	}
 
-	const int32 NumOfEntries{GetArchiveEntries()};
+	int32 NumOfEntries;
+	if (!GetArchiveEntries(NumOfEntries))
+	{
+		ReportError(ERuntimeArchiverErrorCode::GetError, TEXT("Cannot get the number of archive entries. Aborting recursive extracting entries"));
+		OnResult.ExecuteIfBound(false);
+		return;
+	}
 
 	FPaths::NormalizeDirectoryName(EntryName);
 	FPaths::NormalizeDirectoryName(DirectoryPath);

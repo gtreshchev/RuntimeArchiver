@@ -31,7 +31,7 @@ public:
 
 	virtual bool GetArchiveData(TArray64<uint8>& ArchiveData) override;
 
-	virtual int32 GetArchiveEntries() override;
+	virtual bool GetArchiveEntries(int32& NumOfArchiveEntries) override;
 
 	virtual bool GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo) override;
 	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeArchiveEntry& EntryInfo) override;

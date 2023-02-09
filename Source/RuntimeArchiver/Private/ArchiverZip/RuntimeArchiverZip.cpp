@@ -157,8 +157,8 @@ bool URuntimeArchiverZip::GetArchiveData(TArray64<uint8>& ArchiveData)
 	if (Mode != ERuntimeArchiverMode::Write || Location != ERuntimeArchiverLocation::Memory)
 	{
 		ReportError(ERuntimeArchiverErrorCode::UnsupportedMode, FString::Printf(TEXT("Only '%s' mode and '%s' location are supported to get zip archive data (using mode: '%s', using location: '%s')"),
-																				*UEnum::GetValueAsName(ERuntimeArchiverMode::Write).ToString(), *UEnum::GetValueAsName(ERuntimeArchiverLocation::Memory).ToString(),
-																				*UEnum::GetValueAsName(Mode).ToString(), *UEnum::GetValueAsName(Location).ToString()));
+		                                                                        *UEnum::GetValueAsName(ERuntimeArchiverMode::Write).ToString(), *UEnum::GetValueAsName(ERuntimeArchiverLocation::Memory).ToString(),
+		                                                                        *UEnum::GetValueAsName(Mode).ToString(), *UEnum::GetValueAsName(Location).ToString()));
 		return false;
 	}
 
@@ -179,18 +179,16 @@ bool URuntimeArchiverZip::GetArchiveData(TArray64<uint8>& ArchiveData)
 	return true;
 }
 
-int32 URuntimeArchiverZip::GetArchiveEntries()
+bool URuntimeArchiverZip::GetArchiveEntries(int32& NumOfArchiveEntries)
 {
-	if (Super::GetArchiveEntries() < 0)
+	if (!Super::GetArchiveEntries(NumOfArchiveEntries))
 	{
 		return false;
 	}
 
-	const int32 NumOfEntries{static_cast<int32>(mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver)))};
-
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d zip entries"), NumOfEntries);
-
-	return NumOfEntries;
+	NumOfArchiveEntries = mz_zip_reader_get_num_files(static_cast<mz_zip_archive*>(MinizArchiver));
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d zip entries"), NumOfArchiveEntries);
+	return true;
 }
 
 bool URuntimeArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
@@ -287,9 +285,8 @@ bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 		return false;
 	}
 
-	const int32 NumOfArchiveEntries{GetArchiveEntries()};
-
-	if (EntryInfo.Index > (NumOfArchiveEntries - 1) || EntryInfo.Index < 0)
+	int32 NumOfArchiveEntries;
+	if (!GetArchiveEntries(NumOfArchiveEntries) || EntryInfo.Index > (NumOfArchiveEntries - 1))
 	{
 		ReportError(ERuntimeArchiverErrorCode::InvalidArgument, FString::Printf(TEXT("Zip entry index %d is invalid. Min index: 0, Max index: %d"), EntryInfo.Index, (NumOfArchiveEntries - 1)));
 		return false;

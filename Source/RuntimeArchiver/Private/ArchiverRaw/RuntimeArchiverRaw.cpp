@@ -43,7 +43,7 @@ namespace
 	 */
 	bool IsFormatValid(const FName& FormatName)
 	{
-		// There is a bug in the engine that the LZ4 format cannot be found, which actually exists
+		// There is a bug in the engine where the LZ4 format cannot be found, even though it exists
 		if (FormatName == NAME_LZ4)
 		{
 			return true;
@@ -145,7 +145,7 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 
 void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, TArray64<uint8> UncompressedData, const FRuntimeArchiverRawMemoryResultNative& OnResult)
 {
-	AsyncTask(ENamedThreads::AnyThread, [RawFormat, CompressionLevel, UncompressedData = MoveTemp(UncompressedData), OnResult]() mutable
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [RawFormat, CompressionLevel, UncompressedData = MoveTemp(UncompressedData), OnResult]() mutable
 	{
 		TArray64<uint8> CompressedData;
 		CompressRawData(RawFormat, CompressionLevel, MoveTemp(UncompressedData), CompressedData);
@@ -160,7 +160,6 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
 {
 	const FName FormatName{ToName(RawFormat)};
-
 	if (!IsFormatValid(FormatName))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("The specified format '%s' is not valid"), *FormatName.ToString());
@@ -181,7 +180,6 @@ bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, E
 #endif
 
 	int32 CompressedSize = GuessCompressedSize(RawFormat, UncompressedData);
-
 	if (CompressedSize <= 0)
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to get compressed data size for '%s' format"), *FormatName.ToString());
@@ -189,7 +187,6 @@ bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, E
 	}
 
 	TArray64<uint8> TempCompressedData;
-
 	TempCompressedData.SetNumUninitialized(CompressedSize);
 
 	if (!FCompression::CompressMemory(FormatName, TempCompressedData.GetData(), CompressedSize, UncompressedData.GetData(), UncompressedData.Num()))
@@ -199,9 +196,7 @@ bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, E
 	}
 
 	TempCompressedData.SetNum(CompressedSize, true);
-
 	CompressedData = MoveTemp(TempCompressedData);
-
 	return true;
 }
 
@@ -252,13 +247,11 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 			UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to uncompress data for '%s' format"), *FormatName.ToString());
 			return false;
 		}
-
 		return true;
 	}
 #endif
 
 	const int64 UncompressedSize{GuessUncompressedSize(RawFormat, CompressedData)};
-
 	if (UncompressedSize <= 0)
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to get compressed data size for '%s' format"), *FormatName.ToString());
@@ -266,7 +259,6 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 	}
 
 	TArray64<uint8> TempUncompressedData;
-
 	TempUncompressedData.SetNumUninitialized(UncompressedSize);
 
 	if (!FCompression::UncompressMemory(FormatName, TempUncompressedData.GetData(), UncompressedSize, CompressedData.GetData(), CompressedData.Num()))
@@ -276,20 +268,17 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 	}
 
 	UncompressedData = MoveTemp(TempUncompressedData);
-
 	return true;
 }
 
 int64 URuntimeArchiverRaw::GuessCompressedSize(ERuntimeArchiverRawFormat RawFormat, const TArray64<uint8>& UncompressedData)
 {
 	const FName FormatName{ToName(RawFormat)};
-
 	if (!IsFormatValid(FormatName))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("The specified format '%s' is not valid"), *FormatName.ToString());
 		return false;
 	}
-
 #if ENGINE_MAJOR_VERSION >= 5
 	return FCompression::GetMaximumCompressedSize(FormatName, UncompressedData.Num());
 #else

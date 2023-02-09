@@ -36,7 +36,7 @@ public:
 
 	virtual bool GetArchiveData(TArray64<uint8>& ArchiveData) override;
 
-	virtual int32 GetArchiveEntries() override;
+	virtual bool GetArchiveEntries(int32& NumOfArchiveEntries) override;
 
 	virtual bool GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo) override;
 	virtual bool GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeArchiveEntry& EntryInfo) override;
@@ -113,9 +113,10 @@ public:
 	/**
 	 * Get the number of tar archive entries
 	 *
-	 * @return Number of entries in the archive. -1 if nothing
+	 * @param NumOfArchiveEntries The number of entries in the archive
+	 * @return Whether the operation was successful or not
 	 */
-	int32 GetArchiveEntries();
+	bool GetArchiveEntries(int32& NumOfArchiveEntries);
 
 	/**
 	 * Get tar archive data

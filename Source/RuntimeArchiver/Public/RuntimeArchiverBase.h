@@ -106,10 +106,11 @@ public:
 	/**
 	 * Get the number of the archive entries
 	 *
-	 * @return Number of entries in the archive. -1 if nothing
+	 * @param NumOfArchiveEntries The number of entries in the archive
+	 * @return Whether the operation was successful or not
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Runtime Archiver|Get")
-	virtual int32 GetArchiveEntries();
+	virtual bool GetArchiveEntries(int32& NumOfArchiveEntries);
 
 	/**
 	 * Get information about the archive entry by name

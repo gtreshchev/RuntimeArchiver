@@ -21,7 +21,6 @@ bool URuntimeArchiverOodle::CreateArchiveInStorage(FString ArchivePath)
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverFileStream(ArchivePath, true));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open Oodle stream because it is not valid"));
@@ -47,7 +46,6 @@ bool URuntimeArchiverOodle::CreateArchiveInMemory(int32 InitialAllocationSize)
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverMemoryStream(InitialAllocationSize));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open Oodle stream because it is not valid"));
@@ -73,7 +71,6 @@ bool URuntimeArchiverOodle::OpenArchiveFromStorage(FString ArchivePath)
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverFileStream(ArchivePath, false));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open Oodle stream because it is not valid"));
@@ -107,7 +104,6 @@ bool URuntimeArchiverOodle::OpenArchiveFromStorage(FString ArchivePath)
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened Oodle archive '%s' in '%s' to read"), *GetName(), *ArchivePath);
-
 	return true;
 }
 
@@ -119,7 +115,6 @@ bool URuntimeArchiverOodle::OpenArchiveFromMemory(const TArray64<uint8>& Archive
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverMemoryStream(ArchiveData));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open Oodle stream because it is not valid"));
@@ -143,7 +138,6 @@ bool URuntimeArchiverOodle::OpenArchiveFromMemory(const TArray64<uint8>& Archive
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened in-memory Oodle archive '%s' to read"), *GetName());
-
 	return true;
 }
 
@@ -183,9 +177,7 @@ bool URuntimeArchiverOodle::CloseArchive()
 	}
 
 	Reset();
-
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully closed Oodle archive '%s'"), *GetName());
-
 	return true;
 }
 
@@ -223,27 +215,24 @@ bool URuntimeArchiverOodle::GetArchiveData(TArray64<uint8>& ArchiveData)
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved Oodle archive data from memory with size '%lld'"), ArchiveData.Num());
-
 	return true;
 }
 
-int32 URuntimeArchiverOodle::GetArchiveEntries()
+bool URuntimeArchiverOodle::GetArchiveEntries(int32& NumOfArchiveEntries)
 {
-	if (Super::GetArchiveEntries() < 0)
+	if (!Super::GetArchiveEntries(NumOfArchiveEntries))
 	{
 		return false;
 	}
 
-	const int32 NumOfEntries{TarArchiver->GetArchiveEntries()};
-	if (NumOfEntries < 0)
+	if (!TarArchiver->GetArchiveEntries(NumOfArchiveEntries))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to the get number of Oodle entries due to tar archiver error"));
-		return NumOfEntries;
+		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d Oodle entries"), NumOfEntries);
-
-	return NumOfEntries;
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d Oodle entries"), NumOfArchiveEntries);
+	return true;
 }
 
 bool URuntimeArchiverOodle::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
@@ -260,7 +249,6 @@ bool URuntimeArchiverOodle::GetArchiveEntryInfoByName(FString EntryName, FRuntim
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved Oodle entry '%s' by name"), *EntryInfo.Name);
-
 	return true;
 }
 
@@ -278,7 +266,6 @@ bool URuntimeArchiverOodle::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntim
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved Oodle entry '%s' by index"), *EntryInfo.Name);
-
 	return true;
 }
 
@@ -296,9 +283,7 @@ bool URuntimeArchiverOodle::AddEntryFromMemory(FString EntryName, const TArray64
 	}
 
 	LastCompressionLevel = CompressionLevel;
-
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added Oodle entry '%s' with size %lld bytes from memory"), *EntryName, DataToBeArchived.Num());
-
 	return true;
 }
 
@@ -316,7 +301,6 @@ bool URuntimeArchiverOodle::ExtractEntryToMemory(const FRuntimeArchiveEntry& Ent
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted Oodle entry '%s' into memory"), *EntryInfo.Name);
-
 	return true;
 }
 
@@ -328,7 +312,6 @@ bool URuntimeArchiverOodle::Initialize()
 	}
 
 	TarArchiver.Reset(Cast<URuntimeArchiverTar>(CreateRuntimeArchiver(this, URuntimeArchiverTar::StaticClass())));
-
 	if (!TarArchiver.IsValid())
 	{
 		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for Oodle archiver"));
@@ -352,9 +335,7 @@ void URuntimeArchiverOodle::Reset()
 	}
 
 	CompressedStream.Reset();
-
 	Super::Reset();
-
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully uninitialized Oodle archiver '%s'"), *GetName());
 }
 

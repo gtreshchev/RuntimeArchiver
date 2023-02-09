@@ -21,7 +21,6 @@ bool URuntimeArchiverLZ4::CreateArchiveInStorage(FString ArchivePath)
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverFileStream(ArchivePath, true));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open lz4 stream because it is not valid"));
@@ -47,7 +46,6 @@ bool URuntimeArchiverLZ4::CreateArchiveInMemory(int32 InitialAllocationSize)
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverMemoryStream(InitialAllocationSize));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open lz4 stream because it is not valid"));
@@ -73,7 +71,6 @@ bool URuntimeArchiverLZ4::OpenArchiveFromStorage(FString ArchivePath)
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverFileStream(ArchivePath, false));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open lz4 stream because it is not valid"));
@@ -107,7 +104,6 @@ bool URuntimeArchiverLZ4::OpenArchiveFromStorage(FString ArchivePath)
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened lz4 archive '%s' in '%s' to read. Compressed size %lld, uncompressed %lld"), *GetName(), *ArchivePath, TarArchiveData.Num(), CompressedStream->Size());
-
 	return true;
 }
 
@@ -119,7 +115,6 @@ bool URuntimeArchiverLZ4::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveDa
 	}
 
 	CompressedStream.Reset(new FRuntimeArchiverMemoryStream(ArchiveData));
-
 	if (!CompressedStream->IsValid())
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to open lz4 stream because it is not valid"));
@@ -143,7 +138,6 @@ bool URuntimeArchiverLZ4::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveDa
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully opened in-memory lz4 archive '%s' to read"), *GetName());
-
 	return true;
 }
 
@@ -183,9 +177,7 @@ bool URuntimeArchiverLZ4::CloseArchive()
 	}
 
 	Reset();
-
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully closed lz4 archive '%s'"), *GetName());
-
 	return true;
 }
 
@@ -223,27 +215,24 @@ bool URuntimeArchiverLZ4::GetArchiveData(TArray64<uint8>& ArchiveData)
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved lz4 archive data from memory with size '%lld'"), ArchiveData.Num());
-
 	return true;
 }
 
-int32 URuntimeArchiverLZ4::GetArchiveEntries()
+bool URuntimeArchiverLZ4::GetArchiveEntries(int32& NumOfArchiveEntries)
 {
-	if (Super::GetArchiveEntries() < 0)
+	if (!Super::GetArchiveEntries(NumOfArchiveEntries))
 	{
 		return false;
 	}
 
-	const int32 NumOfEntries{TarArchiver->GetArchiveEntries()};
-	if (NumOfEntries < 0)
+	if (!TarArchiver->GetArchiveEntries(NumOfArchiveEntries))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to the get number of lz4 entries due to tar archiver error"));
-		return NumOfEntries;
+		return false;
 	}
 
-	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d lz4 entries"), NumOfEntries);
-
-	return NumOfEntries;
+	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved %d lz4 entries"), NumOfArchiveEntries);
+	return true;
 }
 
 bool URuntimeArchiverLZ4::GetArchiveEntryInfoByName(FString EntryName, FRuntimeArchiveEntry& EntryInfo)
@@ -260,7 +249,6 @@ bool URuntimeArchiverLZ4::GetArchiveEntryInfoByName(FString EntryName, FRuntimeA
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved lz4 entry '%s' by name"), *EntryInfo.Name);
-
 	return true;
 }
 
@@ -278,7 +266,6 @@ bool URuntimeArchiverLZ4::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully retrieved lz4 entry '%s' by index"), *EntryInfo.Name);
-
 	return true;
 }
 
@@ -296,9 +283,7 @@ bool URuntimeArchiverLZ4::AddEntryFromMemory(FString EntryName, const TArray64<u
 	}
 
 	LastCompressionLevel = CompressionLevel;
-
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added lz4 entry '%s' with size %lld bytes from memory"), *EntryName, DataToBeArchived.Num());
-
 	return true;
 }
 
@@ -316,7 +301,6 @@ bool URuntimeArchiverLZ4::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 	}
 
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully extracted lz4 entry '%s' into memory"), *EntryInfo.Name);
-
 	return true;
 }
 
@@ -328,7 +312,6 @@ bool URuntimeArchiverLZ4::Initialize()
 	}
 
 	TarArchiver.Reset(Cast<URuntimeArchiverTar>(CreateRuntimeArchiver(this, URuntimeArchiverTar::StaticClass())));
-
 	if (!TarArchiver.IsValid())
 	{
 		ReportError(ERuntimeArchiverErrorCode::NotInitialized, TEXT("Unable to allocate memory for lz4 archiver"));
@@ -352,9 +335,7 @@ void URuntimeArchiverLZ4::Reset()
 	}
 
 	CompressedStream.Reset();
-
 	Super::Reset();
-
 	UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully uninitialized lz4 archiver '%s'"), *GetName());
 }
 
