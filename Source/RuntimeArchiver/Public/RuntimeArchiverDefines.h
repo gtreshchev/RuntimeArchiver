@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Launch/Resources/Version.h"
 
 #include "Logging/LogCategory.h"
 #include "Logging/LogMacros.h"

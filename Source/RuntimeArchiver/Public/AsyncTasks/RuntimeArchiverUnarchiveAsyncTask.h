@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeArchiverBase.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
+#include "Misc/EngineVersionComparison.h"
 #include "RuntimeArchiverUnarchiveAsyncTask.generated.h"
 
 /**
@@ -87,7 +88,7 @@ private:
 
 	/** Used archiver */
 	UPROPERTY()
-#if ENGINE_MAJOR_VERSION >= 5
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 	TObjectPtr<URuntimeArchiverBase> Archiver;
 #else
 	URuntimeArchiverBase* Archiver;

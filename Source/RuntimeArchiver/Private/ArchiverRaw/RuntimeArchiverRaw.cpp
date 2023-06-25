@@ -3,7 +3,8 @@
 #include "ArchiverRaw/RuntimeArchiverRaw.h"
 #include "RuntimeArchiverDefines.h"
 #include "Async/Async.h"
-#if ENGINE_MAJOR_VERSION >= 5
+#include "Misc/EngineVersionComparison.h"
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 #include "Compression/OodleDataCompressionUtil.h"
 #endif
 
@@ -18,7 +19,7 @@ namespace
 		{
 		case ERuntimeArchiverRawFormat::Oodle:
 			{
-#if ENGINE_MAJOR_VERSION >= 5
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 				return NAME_Oodle;
 #else
 				UE_LOG(LogRuntimeArchiver, Error, TEXT("Oodle format is not supported in %s %d"), TEXT(EPIC_PRODUCT_NAME), ENGINE_MAJOR_VERSION);
@@ -58,7 +59,7 @@ namespace
 	}
 }
 
-#if ENGINE_MAJOR_VERSION >= 5
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 /**
  * Convert plugin-specific archiver data to Oodle compressor-specific data
  */
@@ -166,7 +167,7 @@ bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, E
 		return false;
 	}
 
-#if ENGINE_MAJOR_VERSION >= 5
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 	if (FormatName.IsEqual(NAME_Oodle))
 	{
 		if (!FOodleCompressedArray::CompressTArray64(CompressedData, UncompressedData, OodleConversation::GetCompressor(CompressionLevel), OodleConversation::GetCompressionLevel(CompressionLevel)))
@@ -239,7 +240,7 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 		return false;
 	}
 
-#if ENGINE_MAJOR_VERSION >= 5
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 	if (FormatName.IsEqual(NAME_Oodle))
 	{
 		if (!FOodleCompressedArray::DecompressToTArray64(UncompressedData, CompressedData))
@@ -279,7 +280,7 @@ int64 URuntimeArchiverRaw::GuessCompressedSize(ERuntimeArchiverRawFormat RawForm
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("The specified format '%s' is not valid"), *FormatName.ToString());
 		return false;
 	}
-#if ENGINE_MAJOR_VERSION >= 5
+#if UE_VERSION_NEWER_THAN(5, 0, 0)
 	return FCompression::GetMaximumCompressedSize(FormatName, UncompressedData.Num());
 #else
 	return FCompression::CompressMemoryBound(FormatName, UncompressedData.Num());
