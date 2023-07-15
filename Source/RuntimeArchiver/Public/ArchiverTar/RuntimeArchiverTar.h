@@ -5,12 +5,7 @@
 #include "CoreMinimal.h"
 #include "RuntimeArchiverBase.h"
 #include "Misc/EngineVersionComparison.h"
-
-#if UE_VERSION_NEWER_THAN(5, 1, 0)
-class FRuntimeArchiverBaseStream;
-#else
 #include "Streams/RuntimeArchiverBaseStream.h"
-#endif
 #include "RuntimeArchiverTar.generated.h"
 
 struct FTarHeader;
