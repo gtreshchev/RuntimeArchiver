@@ -8,7 +8,6 @@
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformFileManager.h"
-#include "UObject/GCObjectScopeGuard.h"
 
 URuntimeArchiverBase::URuntimeArchiverBase()
 	: Mode(ERuntimeArchiverMode::Undefined)
@@ -259,9 +258,13 @@ void URuntimeArchiverBase::AddEntriesFromStorage(const FRuntimeArchiverAsyncOper
 		return;
 	}
 
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, OnProgress, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [WeakThis = MakeWeakObjectPtr(this), OnResult, OnProgress, FilePaths = MoveTemp(FilePaths), CompressionLevel]()
 	{
-		FGCObjectScopeGuard Guard(this);
+		if (!WeakThis.IsValid())
+		{
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Failed to add entries from storage: archiver is no longer valid"));
+			return;
+		}
 
 		auto ExecuteResult = [OnResult](bool bResult)
 		{
@@ -287,9 +290,9 @@ void URuntimeArchiverBase::AddEntriesFromStorage(const FRuntimeArchiverAsyncOper
 
 			const FString EntryName{FPaths::GetCleanFilename(FilePath)};
 
-			if (!AddEntryFromStorage(EntryName, FilePath, CompressionLevel))
+			if (!WeakThis->AddEntryFromStorage(EntryName, FilePath, CompressionLevel))
 			{
-				ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot add '%s' entry. Aborting async adding entries"), *EntryName));
+				WeakThis->ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot add '%s' entry. Aborting async adding entries"), *EntryName));
 				ExecuteResult(false);
 				return;
 			}
@@ -341,11 +344,15 @@ void URuntimeArchiverBase::AddEntriesFromStorage_Directory(const FRuntimeArchive
 		return BasePath;
 	}();
 
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, BaseDirectoryPathToExclude, DirectoryPath = MoveTemp(DirectoryPath), CompressionLevel]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [WeakThis = MakeWeakObjectPtr(this), OnResult, BaseDirectoryPathToExclude, DirectoryPath = MoveTemp(DirectoryPath), CompressionLevel]()
 	{
-		FGCObjectScopeGuard Guard(this);
-		const bool bResult{AddEntriesFromStorage_Directory_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel)};
+		if (!WeakThis.IsValid())
+		{
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Failed to add entries from directory '%s': archiver is no longer valid"), *DirectoryPath);
+			return;
+		}
 
+		const bool bResult = WeakThis->AddEntriesFromStorage_Directory_Internal(BaseDirectoryPathToExclude, DirectoryPath, CompressionLevel);
 		if (bResult)
 		{
 			UE_LOG(LogRuntimeArchiver, Log, TEXT("Successfully added entries from directory '%s'"), *DirectoryPath);
@@ -522,9 +529,13 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(const FRuntimeArchiverAsyncOp
 
 	FPaths::NormalizeDirectoryName(DirectoryPath);
 
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, OnProgress, EntryInfo = MoveTemp(EntryInfo), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [WeakThis = MakeWeakObjectPtr(this), OnResult, OnProgress, EntryInfo = MoveTemp(EntryInfo), DirectoryPath = MoveTemp(DirectoryPath), bForceOverwrite]()
 	{
-		FGCObjectScopeGuard Guard(this);
+		if (!WeakThis.IsValid())
+		{
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Failed to extract entries to storage: archiver is no longer valid"));
+			return;
+		}
 
 		auto ExecuteResult = [OnResult](bool bResult)
 		{
@@ -553,9 +564,9 @@ void URuntimeArchiverBase::ExtractEntriesToStorage(const FRuntimeArchiverAsyncOp
 				return FilePath;
 			}();
 
-			if (!ExtractEntryToStorage(Entry, FPaths::Combine(DirectoryPath, TEXT("/"), ExtractFilePath), bForceOverwrite))
+			if (!WeakThis->ExtractEntryToStorage(Entry, FPaths::Combine(DirectoryPath, TEXT("/"), ExtractFilePath), bForceOverwrite))
 			{
-				ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot extract '%s' entry. Aborting async extracting entries"), *Entry.Name));
+				WeakThis->ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot extract '%s' entry. Aborting async extracting entries"), *Entry.Name));
 				ExecuteResult(false);
 				return;
 			}
@@ -636,18 +647,23 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(const FRuntimeArchi
 		return BasePath;
 	}();
 
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this, OnResult, NumOfEntries, EntryName, DirectoryPath, BaseDirectoryPathToExclude, bForceOverwrite]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [WeakThis = MakeWeakObjectPtr(this), OnResult, NumOfEntries, EntryName, DirectoryPath, BaseDirectoryPathToExclude, bForceOverwrite]()
 	{
-		FGCObjectScopeGuard Guard(this);
-		bool bResult{true};
+		if (!WeakThis.IsValid())
+		{
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Failed to extract entries to storage: archiver is no longer valid"));
+			return;
+		}
+
+		bool bResult = true;
 
 		for (int32 EntryIndex = 0; EntryIndex < NumOfEntries; ++EntryIndex)
 		{
 			FRuntimeArchiveEntry ArchiveEntry;
 
-			if (!GetArchiveEntryInfoByIndex(EntryIndex, ArchiveEntry))
+			if (!WeakThis->GetArchiveEntryInfoByIndex(EntryIndex, ArchiveEntry))
 			{
-				ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot get '%d' entry to extract. Aborting recursive extracting entries"), EntryIndex));
+				WeakThis->ReportError(ERuntimeArchiverErrorCode::AddError, FString::Printf(TEXT("Cannot get '%d' entry to extract. Aborting recursive extracting entries"), EntryIndex));
 				bResult = false;
 				break;
 			}
@@ -657,7 +673,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(const FRuntimeArchi
 				// Get the file path by truncating the base directory from the found entry
 				const FString SpecificFilePath{FPaths::Combine(DirectoryPath, ArchiveEntry.Name.RightChop(BaseDirectoryPathToExclude.Len()))};
 
-				if (!ExtractEntryToStorage(ArchiveEntry, SpecificFilePath, bForceOverwrite))
+				if (!WeakThis->ExtractEntryToStorage(ArchiveEntry, SpecificFilePath, bForceOverwrite))
 				{
 					bResult = false;
 					break;
@@ -741,7 +757,7 @@ void URuntimeArchiverBase::ReportError(ERuntimeArchiverErrorCode ErrorCode, cons
 	// Making sure we are in the game thread
 	if (!IsInGameThread())
 	{
-		AsyncTask(ENamedThreads::GameThread, [this, ErrorCode, ErrorString]() { URuntimeArchiverBase::ReportError(ErrorCode, ErrorString); });
+		AsyncTask(ENamedThreads::GameThread, [WeakThis = MakeWeakObjectPtr(this), ErrorCode, ErrorString]() { if (WeakThis.IsValid()) WeakThis->URuntimeArchiverBase::ReportError(ErrorCode, ErrorString); });
 		return;
 	}
 
