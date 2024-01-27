@@ -98,7 +98,8 @@ bool URuntimeArchiverBase::OpenArchiveFromStorage(FString ArchivePath)
 
 bool URuntimeArchiverBase::OpenArchiveFromMemory(TArray<uint8> ArchiveData)
 {
-	return OpenArchiveFromMemory(TArray64<uint8>(MoveTemp(ArchiveData)));
+	TArray64<uint8> ArchiveData64 = TArray64<uint8>(MoveTemp(ArchiveData));
+	return OpenArchiveFromMemory(ArchiveData64);
 }
 
 bool URuntimeArchiverBase::OpenArchiveFromMemory(const TArray64<uint8>& ArchiveData)
@@ -288,7 +289,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage(const FRuntimeArchiverAsyncOper
 
 			FPaths::NormalizeFilename(FilePath);
 
-			const FString EntryName{FPaths::GetCleanFilename(FilePath)};
+			const FString EntryName = FPaths::GetCleanFilename(FilePath);
 
 			if (!WeakThis->AddEntryFromStorage(EntryName, FilePath, CompressionLevel))
 			{
@@ -329,7 +330,7 @@ void URuntimeArchiverBase::AddEntriesFromStorage_Directory(const FRuntimeArchive
 	// For example, if we scanned the "C:/Folder" directory and found "C:/Folder/File.ogg", then the entry name will be either "Folder/File.ogg" or "File.ogg" (depending on bAddParentDirectory)
 	const FString BaseDirectoryPathToExclude = [&DirectoryPath, bAddParentDirectory]()
 	{
-		FString BasePath{FPaths::GetPath(DirectoryPath)};
+		FString BasePath = FPaths::GetPath(DirectoryPath);
 
 		if (!BasePath.IsEmpty())
 		{
@@ -390,7 +391,7 @@ bool URuntimeArchiverBase::AddEntriesFromStorage_Directory_Internal(FString Base
 			}
 
 			// Get the entry name by truncating the base directory from the found file
-			const FString EntryName{FString(FilenameOrDirectory).RightChop(BaseDirectoryPathToExclude.Len())};
+			const FString EntryName = FString(FilenameOrDirectory).RightChop(BaseDirectoryPathToExclude.Len());
 
 			if (!RuntimeArchiver->AddEntryFromStorage(EntryName, FilenameOrDirectory, CompressionLevel))
 			{
@@ -465,11 +466,11 @@ bool URuntimeArchiverBase::ExtractEntryToStorage(const FRuntimeArchiveEntry& Ent
 			UE_LOG(LogRuntimeArchiver, Warning, TEXT("Directory '%s' already exists. It will be overwritten"), *FilePath);
 		}
 
-		IPlatformFile& PlatformFile{FPlatformFileManager::Get().GetPlatformFile()};
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
 		// Ensure we have a valid directory to extract entry to
 		{
-			const FString DirectoryPath{FPaths::GetPath(FilePath)};
+			const FString DirectoryPath = FPaths::GetPath(FilePath);
 			if (!PlatformFile.CreateDirectoryTree(*DirectoryPath))
 			{
 				ReportError(ERuntimeArchiverErrorCode::ExtractError, FString::Printf(TEXT("Unable to create subdirectory '%s' to extract entry '%s'"), *DirectoryPath, *EntryInfo.Name));
@@ -591,8 +592,8 @@ namespace
 
 		for (BaseNameIndex = EntryNameIndex = 0; BaseNameIndex < BaseName.Len() && EntryNameIndex < EntryName.Len(); ++BaseNameIndex, ++EntryNameIndex)
 		{
-			const TCHAR& BaseNameCharacter{BaseName[BaseNameIndex]};
-			const TCHAR& EntryNameCharacter{EntryName[EntryNameIndex]};
+			const TCHAR& BaseNameCharacter = BaseName[BaseNameIndex];
+			const TCHAR& EntryNameCharacter = EntryName[EntryNameIndex];
 
 			if (BaseNameCharacter != EntryNameCharacter)
 			{
@@ -671,7 +672,7 @@ void URuntimeArchiverBase::ExtractEntriesToStorage_Directory(const FRuntimeArchi
 			if (EntryName.IsEmpty() || CheckEntryNameBelongsToBaseName(EntryName, ArchiveEntry.Name))
 			{
 				// Get the file path by truncating the base directory from the found entry
-				const FString SpecificFilePath{FPaths::Combine(DirectoryPath, ArchiveEntry.Name.RightChop(BaseDirectoryPathToExclude.Len()))};
+				const FString SpecificFilePath = FPaths::Combine(DirectoryPath, ArchiveEntry.Name.RightChop(BaseDirectoryPathToExclude.Len()));
 
 				if (!WeakThis->ExtractEntryToStorage(ArchiveEntry, SpecificFilePath, bForceOverwrite))
 				{
@@ -761,7 +762,7 @@ void URuntimeArchiverBase::ReportError(ERuntimeArchiverErrorCode ErrorCode, cons
 		return;
 	}
 
-	if (const URuntimeArchiverSubsystem* ArchiveSubsystem{URuntimeArchiverSubsystem::GetArchiveSubsystem()})
+	if (const URuntimeArchiverSubsystem* ArchiveSubsystem = URuntimeArchiverSubsystem::GetArchiveSubsystem())
 	{
 		if (ArchiveSubsystem->OnError.IsBound())
 		{

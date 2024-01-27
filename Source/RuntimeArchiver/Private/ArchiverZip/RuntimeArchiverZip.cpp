@@ -170,7 +170,7 @@ bool URuntimeArchiverZip::GetArchiveData(TArray64<uint8>& ArchiveData)
 		return false;
 	}
 
-	const int64 ArchiveSize{static_cast<int64>(MinizArchiverReal->m_archive_size)};
+	const int64 ArchiveSize = static_cast<int64>(MinizArchiverReal->m_archive_size);
 
 	ArchiveData = TArray64<uint8>(static_cast<uint8*>(MinizArchiverReal->m_pState->m_pMem), ArchiveSize);
 
@@ -201,7 +201,7 @@ bool URuntimeArchiverZip::GetArchiveEntryInfoByName(FString EntryName, FRuntimeA
 	FPaths::NormalizeFilename(EntryName);
 
 	// Looking for the entry index depending on the entry name
-	const int32 EntryIndex{static_cast<int32>(mz_zip_reader_locate_file(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*EntryName), nullptr, 0))};
+	const int32 EntryIndex = mz_zip_reader_locate_file(static_cast<mz_zip_archive*>(MinizArchiver), TCHAR_TO_UTF8(*EntryName), nullptr, 0);
 
 	if (EntryIndex == -1)
 	{
@@ -221,7 +221,7 @@ bool URuntimeArchiverZip::GetArchiveEntryInfoByIndex(int32 EntryIndex, FRuntimeA
 
 	// Get file information
 	mz_zip_archive_file_stat ArchiveFileStat;
-	const bool bResult{static_cast<bool>(mz_zip_reader_file_stat(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryIndex), &ArchiveFileStat))};
+	const bool bResult = static_cast<bool>(mz_zip_reader_file_stat(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryIndex), &ArchiveFileStat));
 
 	if (!bResult)
 	{
@@ -294,7 +294,7 @@ bool URuntimeArchiverZip::ExtractEntryToMemory(const FRuntimeArchiveEntry& Entry
 
 	// Extracting to memory
 	size_t EntryInMemorySize;
-	void* EntryInMemoryPtr{mz_zip_reader_extract_to_heap(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryInfo.Index), &EntryInMemorySize, 0)};
+	void* EntryInMemoryPtr = mz_zip_reader_extract_to_heap(static_cast<mz_zip_archive*>(MinizArchiver), static_cast<mz_uint>(EntryInfo.Index), &EntryInMemorySize, 0);
 
 	if (!EntryInMemoryPtr)
 	{
@@ -352,14 +352,14 @@ void URuntimeArchiverZip::Reset()
 
 void URuntimeArchiverZip::ReportError(ERuntimeArchiverErrorCode ErrorCode, const FString& ErrorString) const
 {
-	FString ReadyErrorString{FString::Printf(TEXT("%s: %s."), *UEnum::GetValueAsName(ErrorCode).ToString(), *ErrorString)};
+	FString ReadyErrorString = FString::Printf(TEXT("%s: %s."), *UEnum::GetValueAsName(ErrorCode).ToString(), *ErrorString);
 
 	if (IsInitialized())
 	{
-		mz_zip_archive* MinizArchiverReal{static_cast<mz_zip_archive*>(MinizArchiver)};
+		mz_zip_archive* MinizArchiverReal = static_cast<mz_zip_archive*>(MinizArchiver);
 
-		const mz_zip_error LastMinizError{mz_zip_get_last_error(MinizArchiverReal)};
-		const FString LastMinizErrorStr{UTF8_TO_TCHAR(mz_zip_get_error_string(LastMinizError))};
+		const mz_zip_error LastMinizError = mz_zip_get_last_error(MinizArchiverReal);
+		const FString LastMinizErrorStr = UTF8_TO_TCHAR(mz_zip_get_error_string(LastMinizError));
 
 		// Cleaning last miniz error to avoid getting the same error next time
 		if (LastMinizError != MZ_ZIP_NO_ERROR)

@@ -160,7 +160,7 @@ void URuntimeArchiverRaw::CompressRawDataAsync(ERuntimeArchiverRawFormat RawForm
 
 bool URuntimeArchiverRaw::CompressRawData(ERuntimeArchiverRawFormat RawFormat, ERuntimeArchiverCompressionLevel CompressionLevel, const TArray64<uint8>& UncompressedData, TArray64<uint8>& CompressedData)
 {
-	const FName FormatName{ToName(RawFormat)};
+	const FName FormatName = ToName(RawFormat);
 	if (!IsFormatValid(FormatName))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("The specified format '%s' is not valid"), *FormatName.ToString());
@@ -232,7 +232,7 @@ void URuntimeArchiverRaw::UncompressRawDataAsync(ERuntimeArchiverRawFormat RawFo
 
 bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat, TArray64<uint8> CompressedData, TArray64<uint8>& UncompressedData)
 {
-	const FName FormatName{ToName(RawFormat)};
+	const FName FormatName = ToName(RawFormat);
 
 	if (!IsFormatValid(FormatName))
 	{
@@ -252,7 +252,7 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 	}
 #endif
 
-	const int64 UncompressedSize{GuessUncompressedSize(RawFormat, CompressedData)};
+	const int64 UncompressedSize = GuessUncompressedSize(RawFormat, CompressedData);
 	if (UncompressedSize <= 0)
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("Unable to get compressed data size for '%s' format"), *FormatName.ToString());
@@ -274,7 +274,7 @@ bool URuntimeArchiverRaw::UncompressRawData(ERuntimeArchiverRawFormat RawFormat,
 
 int64 URuntimeArchiverRaw::GuessCompressedSize(ERuntimeArchiverRawFormat RawFormat, const TArray64<uint8>& UncompressedData)
 {
-	const FName FormatName{ToName(RawFormat)};
+	const FName FormatName = ToName(RawFormat);
 	if (!IsFormatValid(FormatName))
 	{
 		UE_LOG(LogRuntimeArchiver, Error, TEXT("The specified format '%s' is not valid"), *FormatName.ToString());

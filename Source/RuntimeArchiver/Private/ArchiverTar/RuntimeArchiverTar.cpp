@@ -110,7 +110,7 @@ bool URuntimeArchiverTar::GetArchiveData(TArray64<uint8>& ArchiveData)
 		return false;
 	}
 
-	const bool bSuccess{TarEncapsulator->GetArchiveData(ArchiveData)};
+	const bool bSuccess = TarEncapsulator->GetArchiveData(ArchiveData);
 
 	if (!bSuccess)
 	{
@@ -215,7 +215,7 @@ bool URuntimeArchiverTar::AddEntryFromMemory(FString EntryName, const TArray64<u
 	// Adding directory entries separately as required by the tar specification
 	{
 		// Parsing directories from entry name
-		TArray<FString> Directories{URuntimeArchiverUtilities::ParseDirectories(EntryName)};
+		TArray<FString> Directories = URuntimeArchiverUtilities::ParseDirectories(EntryName);
 
 		for (const FString& Directory : Directories)
 		{
@@ -444,7 +444,7 @@ bool FRuntimeArchiverTarEncapsulator::FindIf(TFunctionRef<bool(const FTarHeader&
 		return false;
 	}
 
-	const int64 PreviousPosition{Stream->Tell()};
+	const int64 PreviousPosition = Stream->Tell();
 
 	// Make sure looking from the start
 	if (!Rewind())
@@ -454,9 +454,9 @@ bool FRuntimeArchiverTarEncapsulator::FindIf(TFunctionRef<bool(const FTarHeader&
 	}
 
 	FTarHeader TempHeader;
-	int32 TempIndex{0};
+	int32 TempIndex = 0;
 
-	bool bFound{false};
+	bool bFound = false;
 
 	// Iterate all files until we hit an error or find the header
 	while (ReadHeader(TempHeader))
@@ -503,7 +503,7 @@ bool FRuntimeArchiverTarEncapsulator::GetArchiveEntries(int32& NumOfArchiveEntri
 		return true;
 	}
 
-	const int64 PreviousPosition{Stream->Tell()};
+	const int64 PreviousPosition = Stream->Tell();
 
 	// Making sure looking from the start
 	if (!Rewind())
