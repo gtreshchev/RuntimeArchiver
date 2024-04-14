@@ -607,6 +607,8 @@ bool FRuntimeArchiverTarEncapsulator::Next()
 
 	const int64 NextEntryOffset = RuntimeArchiverTarOperations::RoundUp<int64>(Header.GetSize(), 512) + sizeof(FTarHeader);
 
+	UE_LOG(LogRuntimeArchiver, Verbose, TEXT("Seeking to next tar entry at offset %lld"), NextEntryOffset);
+
 	return Stream->Seek(Stream->Tell() + NextEntryOffset);
 }
 

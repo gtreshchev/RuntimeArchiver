@@ -3,6 +3,15 @@
 #pragma once
 
 #include "Engine/EngineBaseTypes.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Misc/CString.h"
+
+// On UE < 5.0, UTF-8 characters are not supported, so we should at least use ANSI characters
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+using RA_UTF8CHAR = ANSICHAR;
+#else
+using RA_UTF8CHAR = UTF8CHAR;
+#endif
 
 class FTarChecksumHelper;
 struct FRuntimeArchiveEntry;
@@ -18,7 +27,7 @@ struct FTarHeader
 
 private:
 	/** Entry name */
-	ANSICHAR Name[100];
+	RA_UTF8CHAR Name[100 / sizeof(RA_UTF8CHAR)];
 
 	/** Permission bits */
 	ANSICHAR Mode[8];
@@ -83,8 +92,8 @@ public:
 
 	//~ Writing and reading tar header data
 
-	const ANSICHAR* GetName() const;
-	void SetName(const ANSICHAR* InName);
+	const RA_UTF8CHAR* GetName() const;
+	bool SetName(const RA_UTF8CHAR* InName);
 
 	uint32 GetMode() const;
 	void SetMode(uint32 InMode);
@@ -93,7 +102,7 @@ public:
 	void SetOwner(uint32 InOwner);
 
 	const ANSICHAR* GetGroup() const;
-	void SetGroup(const ANSICHAR* InGroup);
+	bool SetGroup(const ANSICHAR* InGroup);
 
 	int64 GetSize() const;
 	void SetSize(int64 InSize);
@@ -108,5 +117,5 @@ public:
 	void SetTypeFlag(ANSICHAR InTypeFlag);
 
 	const ANSICHAR* GetLinkName() const;
-	void SetLinkName(const ANSICHAR* InLinkName);
+	bool SetLinkName(const ANSICHAR* InLinkName);
 };

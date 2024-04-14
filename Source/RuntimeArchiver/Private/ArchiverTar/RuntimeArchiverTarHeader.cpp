@@ -4,6 +4,8 @@
 
 #include "RuntimeArchiverDefines.h"
 #include "RuntimeArchiverTypes.h"
+#include "HAL/UnrealMemory.h"
+#include "Containers/StringConv.h"
 #include "ArchiverTar/RuntimeArchiverTarOperations.h"
 
 /**
@@ -110,13 +112,13 @@ public:
 	{
 		if (*Header.Checksum == '\0')
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header '%hs' is NULL"), Header.GetName());
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header '%s' is NULL"), StringCast<TCHAR>(Header.GetName()).Get());
 			return false;
 		}
 
 		if (BuildChecksum(Header) != Header.GetChecksum())
 		{
-			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header %hs' is invalid"), Header.GetName())
+			UE_LOG(LogRuntimeArchiver, Error, TEXT("Checksum in tar header %s' is invalid"), StringCast<TCHAR>(Header.GetName()).Get())
 			return false;
 		}
 
@@ -150,23 +152,8 @@ public:
 };
 
 FTarHeader::FTarHeader()
-	: Name{}
-  , Mode{}
-  , Owner{}
-  , Group{}
-  , Size{}
-  , Time{}
-  , Checksum{}
-  , TypeFlag(0)
-  , LinkName{}
-  , Padding{}
 {
-	RuntimeArchiverTarOperations::FillString(Mode,UE_ARRAY_COUNT(Mode), '0');
-	RuntimeArchiverTarOperations::FillString(Owner,UE_ARRAY_COUNT(Owner), '0');
-	RuntimeArchiverTarOperations::FillString(Group,UE_ARRAY_COUNT(Group), '0');
-	RuntimeArchiverTarOperations::FillString(Size,UE_ARRAY_COUNT(Size), '0');
-	RuntimeArchiverTarOperations::FillString(Time,UE_ARRAY_COUNT(Time), '0');
-	Checksum[0] = '\0';
+	FMemory::Memset(this, 0, sizeof(FTarHeader));
 }
 
 bool FTarHeader::ToEntry(const FTarHeader& Header, int32 Index, FRuntimeArchiveEntry& Entry)
@@ -193,7 +180,12 @@ bool FTarHeader::FromEntry(const FRuntimeArchiveEntry& Entry, FTarHeader& Header
 
 bool FTarHeader::GenerateHeader(const FString& Name, int64 Size, const FDateTime& CreationTime, bool bIsDirectory, FTarHeader& Header)
 {
-	Header = {};
+	Header = FTarHeader();
+
+	if (!Header.SetName(StringCast<RA_UTF8CHAR>(*Name).Get()))
+	{
+		return false;
+	}
 
 	// Setting all possible permissions for Unix
 	Header.SetMode(0777);
@@ -201,42 +193,46 @@ bool FTarHeader::GenerateHeader(const FString& Name, int64 Size, const FDateTime
 	Header.SetSize(Size);
 	Header.SetTime(CreationTime.ToUnixTimestamp());
 	Header.SetTypeFlag(FTarTypeFlagHelper::GetTypeFlag(bIsDirectory));
-	Header.SetName(StringCast<ANSICHAR>(*Name).Get());
 	Header.SetChecksum(FTarChecksumHelper::BuildChecksum(Header));
 
 	return true;
 }
 
-const ANSICHAR* FTarHeader::GetName() const
+const RA_UTF8CHAR* FTarHeader::GetName() const
 {
 	return Name;
 }
 
-void FTarHeader::SetName(const ANSICHAR* InName)
+bool FTarHeader::SetName(const RA_UTF8CHAR* InName)
 {
-	RuntimeArchiverTarOperations::StringCopy(Name, InName);
+	// Check if length is within bounds
+	if (TCString<RA_UTF8CHAR>::Strlen(InName) > UE_ARRAY_COUNT(Name))
+	{
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("Name '%s' is too long for tar header. Maximum length is %d"), StringCast<TCHAR>(InName).Get(), static_cast<uint32>(UE_ARRAY_COUNT(Name)));
+		return false;
+	}
+	TCString<RA_UTF8CHAR>::Strncpy(Name, InName, UE_ARRAY_COUNT(Name));
+	return true;
 }
 
 uint32 FTarHeader::GetMode() const
 {
-	return RuntimeArchiverTarOperations::OctalToDecimal<uint32>(Mode, UE_ARRAY_COUNT(Mode));
+	return RuntimeArchiverTarOperations::OctalToDecimal<uint32>(Mode);
 }
 
 void FTarHeader::SetMode(uint32 InMode)
 {
-	RuntimeArchiverTarOperations::DecimalToOctal(InMode, Mode);
-
-	RuntimeArchiverTarOperations::ResizeStringWithZeroBytes(Mode, 8);
+	RuntimeArchiverTarOperations::DecimalToOctal<uint32>(InMode, Mode, UE_ARRAY_COUNT(Mode));
 }
 
 uint32 FTarHeader::GetOwner() const
 {
-	return RuntimeArchiverTarOperations::OctalToDecimal<uint32>(Owner, UE_ARRAY_COUNT(Owner));
+	return RuntimeArchiverTarOperations::OctalToDecimal<uint32>(Owner);
 }
 
 void FTarHeader::SetOwner(uint32 InOwner)
 {
-	RuntimeArchiverTarOperations::DecimalToOctal(InOwner, Owner);
+	RuntimeArchiverTarOperations::DecimalToOctal<uint32>(InOwner, Owner, UE_ARRAY_COUNT(Owner));
 }
 
 const ANSICHAR* FTarHeader::GetGroup() const
@@ -244,43 +240,46 @@ const ANSICHAR* FTarHeader::GetGroup() const
 	return Group;
 }
 
-void FTarHeader::SetGroup(const ANSICHAR* InGroup)
+bool FTarHeader::SetGroup(const ANSICHAR* InGroup)
 {
-	RuntimeArchiverTarOperations::StringCopy(Group, InGroup);
+	// Check if length is within bounds
+	if (FCStringAnsi::Strlen(InGroup) > UE_ARRAY_COUNT(Group))
+	{
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("Group '%s' is too long for tar header. Maximum length is %d"), StringCast<TCHAR>(InGroup).Get(), static_cast<uint32>(UE_ARRAY_COUNT(Group)));
+		return false;
+	}
+	FCStringAnsi::Strncpy(Group, InGroup, UE_ARRAY_COUNT(Group));
+	return true;
 }
 
 int64 FTarHeader::GetSize() const
 {
-	return RuntimeArchiverTarOperations::OctalToDecimal<int64>(Size, UE_ARRAY_COUNT(Size));
+	return RuntimeArchiverTarOperations::OctalToDecimal<int64>(Size);
 }
 
 void FTarHeader::SetSize(int64 InSize)
 {
-	RuntimeArchiverTarOperations::DecimalToOctal(InSize, Size);
-	RuntimeArchiverTarOperations::ResizeStringWithZeroBytes(Size, 12);
+	RuntimeArchiverTarOperations::DecimalToOctal<int64>(InSize, Size, UE_ARRAY_COUNT(Size));
 }
 
 int64 FTarHeader::GetTime() const
 {
-	return RuntimeArchiverTarOperations::OctalToDecimal<int64>(Time, UE_ARRAY_COUNT(Time));
+	return RuntimeArchiverTarOperations::OctalToDecimal<int64>(Time);
 }
 
 void FTarHeader::SetTime(int64 InTime)
 {
-	RuntimeArchiverTarOperations::DecimalToOctal(InTime, Time);
+	RuntimeArchiverTarOperations::DecimalToOctal<int64>(InTime, Time, UE_ARRAY_COUNT(Time));
 }
 
 uint32 FTarHeader::GetChecksum() const
 {
-	return RuntimeArchiverTarOperations::OctalToDecimal<uint32>(Checksum, UE_ARRAY_COUNT(Checksum));
+	return RuntimeArchiverTarOperations::OctalToDecimal<uint32>(Checksum);
 }
 
 void FTarHeader::SetChecksum(uint32 InChecksum)
 {
-	RuntimeArchiverTarOperations::DecimalToOctal(InChecksum, Checksum);
-
-	RuntimeArchiverTarOperations::ResizeStringWithZeroBytes(Checksum, 7);
-	Checksum[7] = ' ';
+	RuntimeArchiverTarOperations::DecimalToOctal<uint32>(InChecksum, Checksum, UE_ARRAY_COUNT(Checksum));
 }
 
 ANSICHAR FTarHeader::GetTypeFlag() const
@@ -298,7 +297,13 @@ const ANSICHAR* FTarHeader::GetLinkName() const
 	return LinkName;
 }
 
-void FTarHeader::SetLinkName(const ANSICHAR* InLinkName)
+bool FTarHeader::SetLinkName(const ANSICHAR* InLinkName)
 {
-	RuntimeArchiverTarOperations::StringCopy(LinkName, InLinkName);
+	if (FCStringAnsi::Strlen(InLinkName) > UE_ARRAY_COUNT(LinkName))
+	{
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("Link name '%s' is too long for tar header. Maximum length is %d"), StringCast<TCHAR>(InLinkName).Get(), static_cast<uint32>(UE_ARRAY_COUNT(LinkName)));
+		return false;
+	}
+	FCStringAnsi::Strncpy(LinkName, InLinkName, UE_ARRAY_COUNT(LinkName));
+	return true;
 }
