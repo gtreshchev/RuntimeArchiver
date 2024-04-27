@@ -61,10 +61,10 @@ public:
 			return true;
 		}
 
-		UE_LOG(LogRuntimeArchiver, Error, TEXT("The type flag %hc (%s) is not supported. Supported type flags are %hc/%hc (%s) and %hc (%s)"),
-		       TypeFlag, *ToString(TypeFlag),
-		       FileTypeFlag, FileTypeFlag1, *ToString(FileTypeFlag),
-		       DirectoryTypeFlag, *ToString(DirectoryTypeFlag));
+		UE_LOG(LogRuntimeArchiver, Error, TEXT("The type flag %c (%s) is not supported. Supported type flags are %c/%c (%s) and %c (%s)"),
+		       TCHAR(TypeFlag), *ToString(TypeFlag),
+		       TCHAR(FileTypeFlag), TCHAR(FileTypeFlag1), *ToString(FileTypeFlag),
+		       TCHAR(DirectoryTypeFlag), *ToString(DirectoryTypeFlag));
 		return false;
 	}
 
