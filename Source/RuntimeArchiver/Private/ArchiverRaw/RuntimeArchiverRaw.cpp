@@ -4,6 +4,7 @@
 #include "RuntimeArchiverDefines.h"
 #include "Async/Async.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/Compression.h"
 #if UE_VERSION_NEWER_THAN(5, 0, 0)
 #include "Compression/OodleDataCompressionUtil.h"
 #endif
