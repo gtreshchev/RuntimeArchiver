@@ -30,8 +30,8 @@
 - Easy archiving and unarchiving of files
 - Recursive archiving and unarchiving of directories
 - Support for reading and writing archives of many formats: Zip, Oodle, Tar, LZ4 and GZip
-- No any static libraries and external dependencies
-- Support for all available devices (Android, iOS, Windows, Mac, Linux, etc)
+- No static libraries and external dependencies
+- Cross-platform compatibility (Windows, Mac, Linux, Android, iOS, etc)
 
 ## Additional information
 
