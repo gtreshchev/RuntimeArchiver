@@ -9,6 +9,7 @@ URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::Unarchiv
 	URuntimeArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverUnarchiveAsyncTask>();
 
 	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
+	ArchiveTask->Archiver->SetInternalFlags(EInternalObjectFlags::Async);
 
 	{
 		ArchiveTask->OperationType = EOperationType::Directory;
@@ -23,6 +24,7 @@ URuntimeArchiverUnarchiveAsyncTask* URuntimeArchiverUnarchiveAsyncTask::Unarchiv
 	URuntimeArchiverUnarchiveAsyncTask* ArchiveTask = NewObject<URuntimeArchiverUnarchiveAsyncTask>();
 
 	ArchiveTask->Archiver = URuntimeArchiverBase::CreateRuntimeArchiver(ArchiveTask, ArchiverClass);
+	ArchiveTask->Archiver->SetInternalFlags(EInternalObjectFlags::Async);
 
 	{
 		ArchiveTask->OperationType = EOperationType::Files;
@@ -109,6 +111,9 @@ void URuntimeArchiverUnarchiveAsyncTask::OnResult_Callback(bool bSuccess)
 	}
 
 	OnSuccess.Broadcast(100);
+
+	SetReadyToDestroy();
+	Archiver->ClearInternalFlags(EInternalObjectFlags::Async);
 }
 
 void URuntimeArchiverUnarchiveAsyncTask::OnProgress_Callback(int32 Percentage)

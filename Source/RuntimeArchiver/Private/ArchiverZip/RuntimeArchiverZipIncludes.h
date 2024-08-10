@@ -9,6 +9,7 @@
 
 #if PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
+#include "Windows/AllowWindowsPlatformTypes.h"
 #endif
 
 #undef malloc
@@ -24,8 +25,11 @@
 #define memcpy(Dest, Source, Count)	FMemory::Memcpy(Dest, Source, Count)
 
 THIRD_PARTY_INCLUDES_START
-#include "miniz.h"
+#include "miniz_export.h"
 #include "miniz.c"
+#include "miniz_zip.c"
+#include "miniz_tinfl.c"
+#include "miniz_tdef.c"
 THIRD_PARTY_INCLUDES_END
 
 #undef malloc
@@ -33,5 +37,9 @@ THIRD_PARTY_INCLUDES_END
 #undef realloc
 #undef memset
 #undef memcpy
+
+#if PLATFORM_WINDOWS
+#include "Windows/HideWindowsPlatformTypes.h"
+#endif
 
 #pragma warning( pop )
