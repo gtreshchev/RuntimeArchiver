@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Georgy Treshchev 2024.
+
+#pragma once
 
 /**
  * Base tar archive stream. Do not create it directly

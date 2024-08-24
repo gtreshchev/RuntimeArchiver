@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿// Georgy Treshchev 2024.
+
+#pragma once
+
 #include "RuntimeArchiverBaseStream.h"
 
 /**

@@ -1,4 +1,6 @@
-﻿#include "Streams/RuntimeArchiverFileStream.h"
+﻿// Georgy Treshchev 2024.
+
+#include "Streams/RuntimeArchiverFileStream.h"
 
 #include "RuntimeArchiverDefines.h"
 #include "GenericPlatform/GenericPlatformFile.h"
