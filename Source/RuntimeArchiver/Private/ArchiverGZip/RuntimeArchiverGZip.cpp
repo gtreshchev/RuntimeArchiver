@@ -192,6 +192,12 @@ bool URuntimeArchiverGZip::GetArchiveData(TArray64<uint8>& ArchiveData)
 	{
 		ArchiveData.SetNumUninitialized(CompressedStream->Size());
 
+		if (!CompressedStream->Seek(0))
+		{
+			ReportError(ERuntimeArchiverErrorCode::GetError, TEXT("Unable to seek first position in gzip archive to get archive data"));
+			return false;
+		}
+
 		if (!CompressedStream->Read(ArchiveData.GetData(), ArchiveData.Num()))
 		{
 			ReportError(ERuntimeArchiverErrorCode::GetError, TEXT("Unable to read gzip compressed stream to get archive data"));
