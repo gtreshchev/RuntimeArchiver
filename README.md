@@ -16,11 +16,8 @@
     <br/>
     <a href="https://docs.georgy.dev/runtime-archiver/overview"><strong>Explore the docs »</strong></a>
     <br/>
-    <br/>
-    <a href="https://unrealengine.com/marketplace/product/runtime-archiver">Marketplace</a>
+    <a href="https://www.fab.com/listings/9bc46d5b-b9e1-4b93-aede-194619108265">Fab</a>
     .
-    <a href="https://github.com/gtreshchev/RuntimeArchiver/releases">Releases</a>
-    <br/>
     <a href="https://georgy.dev/discord">Discord support chat</a>
   </p>
 
